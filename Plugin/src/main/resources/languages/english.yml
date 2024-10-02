@@ -51,18 +51,19 @@ chat.meteorit_spawn: "§aThe meteorite §fhas crashed at coordinates §ax: %x%, 
 chat.meteorit_was_found: "§aMeteorit was found!"
 
 #Quests
-daily_quest.dailyquest1: "§7Kill 15 players"
-daily_quest.dailyquest2: "§7Collect 5 assists"
-daily_quest.dailyquest3: "§7Win 5 games"
-daily_quest.dailyquest4: "§7Drew 3x first blood of the game"
-daily_quest.dailyquest5: "§7Fire 5x fireball"
-daily_quest.dailyquest6: "§7Kill a player with your bow"
+daily_quest.survivor: "§7Survive longer than 50% of players/newline/in 3 separate games"
+daily_quest.marksman: "§7Kill a player with a ranged weapon"
+daily_quest.bloodthirsty: "§7Kill 15 players"
+daily_quest.opening_carnage: "§7Draw first blood in 3 separate games"
+daily_quest.victorious: "§7Win 5 games"
+daily_quest.void_kill: "§7Knock 3 players into the void"
 
-weekly_quest.weeklyquest1: "§7Kill 75 players"
-weekly_quest.weeklyquest2: "§7Collect 20 assists"
-weekly_quest.weeklyquest3: "§7Win 30 games"
-weekly_quest.weeklyquest4: "§7Drew 20x first blood of the game"
-weekly_quest.weeklyquest5: "§7Kill a player 3x with your bow"
+weekly_quest.addicted_to_blood: "§7Kill 125 players"
+weekly_quest.this_game_is_so_easy: "§7Win 30 games"
+weekly_quest.always_first: "§7Draw first blood in 12 games"
+weekly_quest.marksman: "§7Kill 10 players with a ranged weapon"
+weekly_quest.meteorite_discoverer: "§7Loot a chest found in a meteorite"
+weekly_quest.top_killer: "§7Rank 1st in kills in 3 separate games"
 
 
 #Scoreboard

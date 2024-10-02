@@ -5,7 +5,7 @@ import cz.johnslovakia.gameapi.task.Task;
 import cz.johnslovakia.gameapi.task.TaskInterface;
 import cz.johnslovakia.gameapi.users.GamePlayer;
 
-public class MeteoritTask implements TaskInterface {
+public class MeteoriteTask implements TaskInterface {
 
     @Override
     public void onStart(Task task) {
@@ -26,7 +26,7 @@ public class MeteoritTask implements TaskInterface {
 
     @Override
     public void onEnd(Task task) {
-        Meteorit meteorit = new Meteorit(task.getGame());
+        Meteorite meteorit = new Meteorite(task.getGame());
         meteorit.spawn();
     }
 }

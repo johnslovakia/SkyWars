@@ -6,8 +6,7 @@ import cz.johnslovakia.gameapi.game.Game;
 import cz.johnslovakia.gameapi.task.Task;
 import cz.johnslovakia.skywars.SkyWars;
 import cz.johnslovakia.skywars.chest.ChestManager;
-import cz.johnslovakia.skywars.structures.Meteorit;
-import cz.johnslovakia.skywars.structures.MeteoritTask;
+import cz.johnslovakia.skywars.structures.MeteoriteTask;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -25,6 +24,6 @@ public class PreparationStartListener implements Listener {
 
         new Task(game, "TimePlaying", 120, SkyWars.getInstance());
         new Task(game, "ChestRefill", 120, SkyWars.getInstance());
-        new Task(game, "Meteorit", 285, new MeteoritTask(),SkyWars.getInstance());
+        new Task(game, "Meteorit", 285, new MeteoriteTask(),SkyWars.getInstance());
     }
 }

@@ -4,7 +4,8 @@ import com.cryptomorin.xseries.XMaterial;
 import cz.johnslovakia.gameapi.GameAPI;
 import cz.johnslovakia.gameapi.Minigame;
 import cz.johnslovakia.gameapi.MinigameSettings;
-import cz.johnslovakia.gameapi.WorldManagement.WorldManager;
+import cz.johnslovakia.gameapi.users.quests.QuestManager;
+import cz.johnslovakia.gameapi.worldManagement.WorldManager;
 import cz.johnslovakia.gameapi.datastorage.MinigameTable;
 import cz.johnslovakia.gameapi.economy.Economy;
 import cz.johnslovakia.gameapi.events.GamePlayerDeathEvent;
@@ -26,6 +27,10 @@ import cz.johnslovakia.gameapi.utils.inventoryBuilder.Item;
 import cz.johnslovakia.skywars.chest.ChestManager;
 import cz.johnslovakia.skywars.kits.*;
 import cz.johnslovakia.skywars.perks.*;
+import cz.johnslovakia.skywars.quests.daily.*;
+import cz.johnslovakia.skywars.quests.weekly.AddictedToBlood;
+import cz.johnslovakia.skywars.quests.weekly.AlwaysFirst;
+import cz.johnslovakia.skywars.quests.weekly.ThisGameIsSoEasy;
 import cz.johnslovakia.skywars.utils.CoinsAPIHandler;
 import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.VaultAPIHandler;
@@ -221,7 +226,7 @@ public final class SkyWars extends JavaPlugin implements Minigame{
         PlayerManager.registerPlayersScore(PlayerScore.builder()
                 .setName("Death")
                 .createStat("Deaths")
-                .addTrigger(new Trigger<>(GamePlayerDeathEvent.class, GamePlayerDeathEvent::getPlayer))
+                .addTrigger(new Trigger<>(GamePlayerDeathEvent.class, GamePlayerDeathEvent::getGamePlayer))
                 .build());
         PlayerManager.registerPlayersScore(PlayerScore.builder()  //TODO: dodělat
                 .setName("Assist")
@@ -381,5 +386,9 @@ public final class SkyWars extends JavaPlugin implements Minigame{
         PerkManager perkManager = new PerkManager("SkyWars", getSouls());
         perkManager.registerPerk(new Absorption(), new ArrowRecovery(), new BlazingArrow(), new Digger(), new Ender(), new LuckyCharm(), new Rambo(), new ResistanceBoost(), new VoidScavenger());
         GameAPI.getInstance().setPerkManager(perkManager);
+
+        QuestManager questManager = new QuestManager("SkyWars");
+        questManager.registerQuest(new Bloodthirsty(), new Marksman(), new OpeningCarnage(), new Survivor(), new Victorious(), new VoidKill(), new AddictedToBlood(), new AlwaysFirst(), new cz.johnslovakia.skywars.quests.weekly.Marksman(), new ThisGameIsSoEasy());
+        GameAPI.getInstance().setQuestManager(questManager);
     }
 }

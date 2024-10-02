@@ -12,6 +12,7 @@ import cz.johnslovakia.gameapi.utils.ItemBuilder;
 import cz.johnslovakia.gameapi.utils.RandomUtils;
 import cz.johnslovakia.gameapi.utils.Sounds;
 import cz.johnslovakia.skywars.SkyWars;
+import cz.johnslovakia.skywars.events.ChestLootEvent;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -31,14 +32,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 
 @Getter
-public class Meteorit implements Listener {
+public class Meteorite implements Listener {
 
     Game game;
     Location location;
     Chest chest;
     boolean opened;
 
-    public Meteorit(Game game){
+    public Meteorite(Game game){
         this.game = game;
         //TODO: najit lokaci
 
@@ -204,6 +205,9 @@ public class Meteorit implements Listener {
             if (chest.getInventory().getContents().length == 0){
                 location.getBlock().setType(Material.AIR);
             }
+
+            ChestLootEvent ev = new ChestLootEvent(gp, this);
+            Bukkit.getPluginManager().callEvent(ev);
         }
     }
 
