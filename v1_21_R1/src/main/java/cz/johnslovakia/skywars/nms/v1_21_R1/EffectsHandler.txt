@@ -1,0 +1,155 @@
+package cz.johnslovakia.skywars.nms.v1_21_R1;
+
+import cz.johnslovakia.gameapi.GameAPI;
+import cz.johnslovakia.skywars.api.Effects;
+import cz.johnslovakia.skywars.api.MathUtils;
+import cz.johnslovakia.skywars.api.Trail;
+import org.bukkit.Effect;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
+
+public class EffectsHandler implements Effects {
+
+    @Override
+    public void playHearthEffect(Location location) {
+        for (double height = 0.0; height < 1.0; height += 0.2) {
+            location.getWorld().spawnParticle(Particle.HEART, location.clone().add((double) MathUtils.randomRange(-1.0f, 1.0f), height, (double)MathUtils.randomRange(-1.0f, 1.0f)), 1);
+        }
+    }
+
+    @Override
+    public void playRedstoneEffect(Location location) {
+        for (double height = 0.0; height < 1.0; height += 0.8) {
+            location.getWorld().playEffect(location.clone().add((double) MathUtils.randomRange(-1.0f, 1.0f), height, (double)MathUtils.randomRange(-1.0f, 1.0f)), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
+            location.getWorld().playEffect(location.clone().add((double)MathUtils.randomRange(1.0f, -1.0f), height, (double)MathUtils.randomRange(-1.0f, 1.0f)), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
+        }
+    }
+
+    @Override
+    public void playSquidEffect(Location location, Plugin plugin) {
+        location.add(0, -0.3, 0);
+
+        ArmorStand armor = (ArmorStand)location.getWorld().spawnEntity(location.add(0, -1, 0), EntityType.ARMOR_STAND);
+        armor.setVisible(false);
+        armor.setGravity(false);
+        Entity e = location.getWorld().spawnEntity(location, EntityType.SQUID);
+        armor.addPassenger(e);
+        e.setInvulnerable(true);
+
+        new BukkitRunnable() {
+            int i = 0;
+            @Override
+            public void run() {
+                i++;
+                if (armor.getPassengers().get(0) == null){
+                    cancel();
+                }
+                Entity passenger = armor.getPassengers().get(0);
+                armor.eject();
+                armor.teleport(armor.getLocation().add(0,0.5,0));
+                armor.addPassenger(passenger);
+                armor.getLocation().getWorld().spawnParticle(Particle.FLAME, armor.getLocation().add(0.0, -0.2, 0.0), 1);
+                if(i == 20) {
+                    armor.remove();
+                    e.remove();
+                    armor.getLocation().getWorld().spawnParticle(Particle.EXPLOSION_HUGE, armor.getLocation().add(0.0, 0.5, 0.0), 1);
+                    i = 0;
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 1, 0);
+    }
+
+    @Override
+    public void playTornadoEffect(Location location, Plugin plugin) {
+
+        new BukkitRunnable() {
+            int angle = 0;
+            @Override
+            public void run() {
+                int max_height = 7;
+                double max_radius = 5;
+                int lines = 5;
+                double height_increasement = 0.25;
+                double radius_increasement = max_radius / max_height;
+                for (int l = 0; l < lines; l++) {
+                    for (double y = 0; y < max_height; y+=height_increasement ) {
+                        double radius = y * radius_increasement;
+                        double x = Math.cos(Math.toRadians((double) 360 /lines*l + y*30 - angle)) * radius;
+                        double z = Math.sin(Math.toRadians((double) 360 /lines*l + y*30 - angle)) * radius;
+
+                        location.getWorld().spawnParticle(Particle.CLOUD, x, y, z, 1);
+                    }
+                }
+                angle++;
+                if(angle == 70) {
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 2, 0);
+    }
+
+    @Override
+    public void playWaveEffect(Location location, Plugin plugin) {
+        new BukkitRunnable() {
+            double t = Math.PI/4;
+            public void run(){
+                t = t + 0.1*Math.PI;
+                for (double theta = 0; theta <= 2*Math.PI; theta = theta + Math.PI/32){
+                    double x = t*Math.cos(theta);
+                    double y = 2*Math.exp(-0.1*t) * Math.sin(t) + 1.5;
+                    double z = t*Math.sin(theta);
+                    location.add(x,y,z);
+                    location.getWorld().spawnParticle(Particle.DRIP_WATER, location, 1);
+                    location.getWorld().spawnParticle(Particle.CLOUD, location, 1);
+                    location.subtract(x,y,z);
+                    theta = theta + Math.PI/64;
+                }
+                if (t > 8){
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 4, 0);
+    }
+
+    @Override
+    public void playBurningShoesEffect(Location location, Plugin plugin) {
+        (new BukkitRunnable() {
+            double t = 0.0D;
+
+            public void run() {
+                this.t += 0.3D;
+                for (double phi = 0.0D; phi <= 6.0D; phi += 1.5D) {
+                    double x = 0.11D * (12.5D - this.t) * Math.cos(this.t + phi);
+                    double y = 0.23D * this.t;
+                    double z = 0.11D * (12.5D - this.t) * Math.sin(this.t + phi);
+                    location.add(x, y, z);
+
+                    GameAPI.getInstance().getParticleAPI().playParticle(location, new cz.johnslovakia.gameapi.api.particles.Particle(ParticleType.FLAME, 100, 0.01, new Vector(0.0f, 0.0f, 0.0f)));
+
+                    location.subtract(x, y, z);
+                    if (this.t >= 12.5D) {
+                        location.add(x, y, z);
+                        if (phi > Math.PI)
+                            cancel();
+                    }
+                }
+            }
+        }).runTaskTimer(plugin, 1L, 1L);
+    }
+
+    @Override
+    public void trail(Location location, Trail trail) {
+        if (trail == null) {
+            return;
+        }
+        location.getWorld().spawnParticle(Particle.valueOf(trail.getV1_20()), location.getX(), location.getY(), location.getZ(), 2, 0.1, 0.1, 0.1, 1);
+    }
+}

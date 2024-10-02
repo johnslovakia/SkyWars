@@ -1,0 +1,103 @@
+minigame.description:
+
+
+Item.team_selector: "§aTeam Selector"
+Item.kit_selector: "§aKit Selector"
+Item.perks: "§aPerks"
+Item.quests: "§aQuests"
+Item.map_vote: "§aVote for Map"
+Item.game_cosmetics: "§aGame Cosmetics"
+Item.stats: "§aStatistics"
+Item.introduction: "§aMinigame Introduction"
+
+
+# PERKS
+perk.absorption: "§fWhen you kill enemy,/newline/§fyou receive Absorption/newline/§ffor §a%improvement_integer% §fseconds."
+perk.arrowrecovery: "§a%improvement_integer%% §fchance of getting/newline/§fback your arrow on bow hit."
+perk.blazingarrow: "§a%improvement_integer%% §fchance to shooting a/newline/§ffire arrow with your bow."
+perk.digger: "§fWhen game starts,/newline/§fyou receive Haste II/newline/§ffor §a%improvement_integer% §fseconds."
+perk.ender: "§a%improvement_integer%% §fchance of receive/newline/§fEnderpearl, when you kill enemy."
+perk.luckycharm: "§a%improvement_integer%% §fchance to give/newline/§fa golden apple,/newline/§fwhen you kill enemy."
+perk.rambo: "§fWhen you kill enemy,/newline/§fyou receive Strenght I/newline/§ffor §a%improvement_integer% §fseconds."
+perk.resistanceboost: "§fWhen game starts,/newline/§fyou receive Resistance/newline/§ffor §a%improvement_integer% §fseconds."
+perk.voidscavenger: "§a%improvement_integer%% §fchance to give/newline/§fone slot of enemy inventory items/newline/§fto you, when you kill them/newline/§fin the void."
+
+
+# KITS
+kit.armorer: "§7Wooden sword/newline/§7Iron chestplate/newline/§7Iron leggings/newline/§7Iron boots"
+kit.armorsmith: "§7Anvil/newline/§7Enchanted book (Sharpness I)/newline/§7Enchanted book (Protection III)/newline/§764x enchanting bottle"
+kit.baseballplayer: "§7Wooden sword (Knockback I)/newline/§7Iron helmet (Protection I)"
+kit.enderman: "§7Enderpearl (25s spawn delay)/newline/§7Leather armor (Protection I)"
+kit.healer: "§73x Splash potion of Healing/newline/§7Iron boots"
+kit.hunter: "§7Bow (Power I)/newline/§78x arrow"
+kit.knight: "§7Iron sword (Sharpness I)/newline/§7Golden apple/newline/§7Iron chestplate (Protection II)"
+kit.ninja: "§7Iron sword/newline/§710x Snowball/newline/§7Water bucket/newline/§7Splash potion of speed 3 (15s)/newline/§7Ninja Head/newline/§7Black Leather Chestplate (Protection IV)"
+kit.princess: "§7Bow (Power I, Flame I, 12 uses)/newline/§74x arrow/newline/§7Gold helmet (Protection III)"
+kit.pyro: "§7Flint and Steel/newline/§72x Lava bucket/newline/§7Chain Chestplate/newline/§7Chain Leggings/newline/§7Infinite Potion of Fire Resistance"
+kit.scout: "§7Stone sword/newline/§73x Splash potion of Speed 2 (20s)"
+kit.viking: "§7Diamond axe (Sharpness I, Knockback I)/newline/§7Iron helmet (Protection I)/newline/§7Iron leggings (Protection I)"
+
+
+# ONLY MINIGAME MESSAGES
+chat.minigame_description: "§7There is only one goal in this game:/newline/§7kill all the enemy teams and be the last one standing!"
+holograms.empty: "§cEmpty!"
+holograms.items: "§6%items% items"
+special_item.inferno_staff: "§fClick to send out a pulse of fire,/newline/§fsetting alight to nearby players."
+special_item.run: "§fClick to gain Speed I for 5 seconds!"
+special_item.soup: "§fClick to get Regeneration I for 3 seconds!"
+chat.special_item_used: "§fYou used special item §a%special_item%§r§f"
+chat.meteorit_will_crash_in: "\u1E87 §aMeteorite §ffilled with loot will crash in §a%time% §fseconds."
+chat.meteorit_spawn: "§aThe meteorite §fhas crashed at coordinates §ax: %x%, z: %z%"
+chat.meteorit_was_found: "§aMeteorit was found!"
+
+#Quests
+daily_quest.dailyquest1: "§7Kill 15 players"
+daily_quest.dailyquest2: "§7Collect 5 assists"
+daily_quest.dailyquest3: "§7Win 5 games"
+daily_quest.dailyquest4: "§7Drew 3x first blood of the game"
+daily_quest.dailyquest5: "§7Fire 5x fireball"
+daily_quest.dailyquest6: "§7Kill a player with your bow"
+
+weekly_quest.weeklyquest1: "§7Kill 75 players"
+weekly_quest.weeklyquest2: "§7Collect 20 assists"
+weekly_quest.weeklyquest3: "§7Win 30 games"
+weekly_quest.weeklyquest4: "§7Drew 20x first blood of the game"
+weekly_quest.weeklyquest5: "§7Kill a player 3x with your bow"
+
+
+#Scoreboard
+scoreboard.kit.none: "§aNone"
+scoreboard.lootable: "Lootable"
+
+
+#Setup Mode
+chat.setup_mode_on: "§aYou're now in Setup Mode..."
+chat.no_icon: "\u1E80 §fYou didn't set any item as an icon, so the map will still show up as paper in the map vote inventory."
+chat.how_to_set_map_icon: "\u1E80 §fSet the map icon by placing any item in the first slot and then confirm your selection."
+chat.successfully.icon_set: "\uE236 §aYou've successfully set the map icon."
+chat.successfully.rare_chest: "\uE236 §aYou've successfully set a rare chest!"
+chat.successfully.island_chest: "\uE236 §aYou've successfully set a island chest for island: %island%"
+chat.successfully.spectator_spawn: "\uE236 §aYou've successfully set the spectator spawn."
+chat.successfully.pos1: "\uE236 §aYou've successfully set the map pos1."
+chat.successfully.pos2: "\uE236 §aYou've successfully set the map pos2."
+chat.successfully.finish: "\uE236 §aYou've finished setting up the map."
+chat.successfully.spawnpoint: "\uE236 §aYou've successfully set spawnpoint for island: %island%"
+chat.error.rare_chest: "\uE235 §cYou've to click on the rare chest to set it."
+chat.error.island_chest: "\uE235 §cYou've to click on the island chest to set it."
+chat.error.island_chest.already_set: "\uE235 §cYou've already set up this chest!"
+setup_item.map_selector: "§aMap Selector"
+setup_item.confirm: "§aConfirm"
+setup_item.finish: "§aFinish"
+setup_item.set_icon: "§6Set icon"
+setup_item.island_setup: "§eSetup Island"
+setup_item.rare_chest: "§bSet Rare Chest"
+setup_item.set_chest1: "§bSet Island Chest 1"
+setup_item.set_chest2: "§bSet Island Chest 2"
+setup_item.set_chest3: "§bSet Island Chest 3"
+setup_item.spectator_spawn: "§aSet Spectator Spawn"
+setup_item.pos1: "§cSet Pos1"
+setup_item.pos2: "§cSet Pos2"
+setup_item.back: "§cGo Back"
+setup_item.next_island: "§aNext Island"
+setup_item.set_spawnpoint: "§eSet spawnpoint"
+setup_inventory.click_to_select: "§a► Click to select"

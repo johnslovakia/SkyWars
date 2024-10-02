@@ -1,0 +1,10 @@
+name: SkyWars
+version: ${project.version}
+main: cz.johnslovakia.skywars.SkyWars
+prefix: SkyWars
+authors: [Hunzek_]
+depend: [MinigameAPI]
+softdepend: [CoinsAPINB]
+description: Minigame SkyWars developed by Hunzek_
+commands:
+  skywars:

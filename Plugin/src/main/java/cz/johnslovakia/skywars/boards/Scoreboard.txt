@@ -1,0 +1,231 @@
+package cz.johnslovakia.skywars.boards;
+
+import cz.johnslovakia.gameapi.GameAPI;
+import cz.johnslovakia.gameapi.game.GameState;
+import cz.johnslovakia.gameapi.events.GameBoardEvent;
+import cz.johnslovakia.gameapi.game.Game;
+import cz.johnslovakia.gameapi.users.GamePlayer;
+import cz.johnslovakia.gameapi.managers.TeamManager;
+import cz.johnslovakia.gameapi.messages.MessageManager;
+import cz.johnslovakia.gameapi.scoreboard.CScoreboard;
+import cz.johnslovakia.gameapi.task.Task;
+import cz.johnslovakia.gameapi.util.GameUtil;
+import cz.johnslovakia.gameapi.utils.Logger;
+import cz.johnslovakia.skywars.SkyWars;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class Scoreboard implements Listener {
+
+
+    public String replaceLine(String line, GamePlayer gamePlayer){
+        if (gamePlayer.getGame() == null){
+            return "";
+        }
+        Game game = gamePlayer.getGame();
+        GameState state = gamePlayer.getGame().getState();
+
+        Date date = new Date();
+        String dateFormat = new SimpleDateFormat("MM/dd/yyyy").format(date);
+        line = line.replaceAll("%date%", dateFormat);
+
+        line = line.replaceAll("%game_id%", game.getID());
+        line = line.replaceAll("%players%", "" + game.getPlayers().size());
+        line = line.replaceAll("%max_players%", "" + game.getSettings().getMaxPlayers());
+        line = line.replaceAll("%kit%", getKit(gamePlayer));
+        line = line.replaceAll("%map%", (game.getPlayingArena() != null ? game.getPlayingArena().getID() : "None"));
+
+        if (state.equals(GameState.PREPARATION) || state.equals(GameState.INGAME)) {
+            line = line.replaceAll("%chest_refill%", (Task.getTask(game, "ChestRefill") != null ? GameUtil.getDurationString(Task.getTask(game, "ChestRefill").getCounter()) : "00:00"));
+            //line = line.replaceAll("%throwable_TNT%", (Task.getTask(game, "ThrowableTNT") != null ? (Task.getTask(game, "ThrowableTNT").getCounter() != 0 ? GameUtil.getDurationString(Task.getTask(game, "ThrowableTNT").getCounter()) : MessageManager.get(gamePlayer, "scoreboard.lootable").getTranslated()) : "00:00"));
+            line = line.replaceAll("%alive_enemies%", "" + game.getAlivePlayers().stream().filter(gp -> gp != gamePlayer).toList().size());
+        }
+
+        line = line.replaceAll("%kills%", "" + gamePlayer.getScoreByName("Kill").getScore());
+        line = line.replaceAll("%assists%", "" + gamePlayer.getScoreByName("Assist").getScore());
+
+        return line;
+    }
+
+    public String replaceTime(String line, GamePlayer gamePlayer){
+        Game game = gamePlayer.getGame();
+        if (game.getRunningMainTask() != null) {
+            line = line.replaceAll("%time%", GameUtil.getDurationString(game.getRunningMainTask().getCounter()));
+        }else{
+            line = line.replaceAll("%time%", "00:00");
+        }
+        return line;
+    }
+
+
+    public String getTitle(GamePlayer gamePlayer){
+        if (gamePlayer.getGame() == null){
+            return "";
+        }
+
+        GameState state = gamePlayer.getGame().getState();
+        String language = gamePlayer.getLanguage().getName().toLowerCase();
+        File messagesFolder = new File(SkyWars.getInstance().getDataFolder(), "languages");
+        File file = new File(messagesFolder, language + "_scoreboard.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+
+        if (state.equals(GameState.LOBBY)) {
+            if (config.getString("scoreboard.Waiting.title") != null){
+                return  replaceTime(config.getString("scoreboard.Waiting.title"), gamePlayer);
+            }
+        }else if (state.equals(GameState.STARTING)) {
+            if (config.getString("scoreboard.Waiting.title") != null){
+                return  replaceTime(config.getString("scoreboard.Starting.title"), gamePlayer);
+            }
+        }else if (state.equals(GameState.PREPARATION) || state.equals(GameState.INGAME)) {
+            if (config.getString("scoreboard.InGame.title") != null){
+                return  replaceTime(config.getString("scoreboard.InGame.title"), gamePlayer);
+            }
+        }else if (state.equals(GameState.ENDING) || state.equals(GameState.RESTARTING)) {
+            if (config.getString("scoreboard.Ending.title") != null){
+                return  replaceTime(config.getString("scoreboard.Ending.title"), gamePlayer);
+            }
+        }
+
+        return "§2§lMiniAnni-Run";
+    }
+
+
+    public List<String> getLines(GamePlayer gamePlayer){
+        if (gamePlayer.getGame() == null){
+            return null;
+        }
+        GameState state = gamePlayer.getGame().getState();
+        String language = gamePlayer.getLanguage().getName().toLowerCase();
+        File messagesFolder = new File(SkyWars.getInstance().getDataFolder(), "languages");
+        File file = new File(messagesFolder, language + "_scoreboard.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        List<String> lines = new ArrayList<>();
+
+
+        if (state.equals(GameState.LOBBY)) {
+            if (config.getStringList("scoreboard.Waiting.lines").isEmpty()){
+                Logger.log("There is no scoreboard for " + language + "!", Logger.LogType.ERROR);
+                lines.add("§cNo Scoreboard for " + language);
+                return lines;
+            }
+            lines.addAll(config.getStringList("scoreboard.Waiting.lines"));
+        }else if (state.equals(GameState.STARTING)) {
+            if (config.getStringList("scoreboard.Starting.lines").isEmpty()){
+                Logger.log("There is no scoreboard for " + language + "!", Logger.LogType.ERROR);
+                lines.add("§cNo Scoreboard for " + language);
+                return lines;
+            }
+            lines.addAll(config.getStringList("scoreboard.Starting.lines"));
+        }else if (state.equals(GameState.PREPARATION) || state.equals(GameState.INGAME)) {
+            if (config.getStringList("scoreboard.InGame.lines").isEmpty()){
+                Logger.log("There is no scoreboard for " + language + "!", Logger.LogType.ERROR);
+                lines.add("§cNo Scoreboard for " + language);
+                return lines;
+            }
+            lines.addAll(config.getStringList("scoreboard.InGame.lines"));
+        }else if (state.equals(GameState.ENDING) || state.equals(GameState.RESTARTING)) {
+            if (config.getStringList("scoreboard.Ending.lines").isEmpty()){
+                Logger.log("There is no scoreboard for " + language + "!", Logger.LogType.ERROR);
+                lines.add("§cNo Scoreboard for " + language);
+                return lines;
+            }
+            lines.addAll(config.getStringList("scoreboard.Ending.lines"));
+        }else{
+            lines.add("§cSetup Mode");
+        }
+
+        return lines;
+    }
+
+    @EventHandler
+    public void onGameBoard(GameBoardEvent event) {
+        GamePlayer gamePlayer = event.getGamePlayer();
+        Game game = gamePlayer.getGame();
+
+        CScoreboard.Builder builder = new CScoreboard.Builder().gamePlayer(gamePlayer);
+
+        builder.title(gamePlayer1 -> getTitle(gamePlayer1));
+
+        for (String line : getLines(gamePlayer)){
+            builder.addLine(gamePlayer1 -> replaceLine(line, gamePlayer1));
+        }
+
+        builder.build();
+    }
+
+    /*@EventHandler
+    public void onGameBoard(GameBoardEvent event) {
+        GamePlayer gamePlayer = event.getGamePlayer();
+        Game game = event.getGame();
+
+        String server = (DataHandler.getMainConfig().getConfig().getString("server") != null ? DataHandler.getMainConfig().getConfig().getString("server") : "mc.your_server.com");
+
+        Date date = new Date();
+        String dateFormat = new SimpleDateFormat("dd/MM/yyyy").format(date);
+
+        CScoreboard.Builder builder = new CScoreboard.Builder().gamePlayer(gamePlayer);
+        builder.title(gameplayer -> "§2§lMicroBattle" + (game.getTask() == null ? "" : " §7| §f" + GameUtil.getDurationString(game.getTask().getCounter())));
+
+
+        if (game.getState() == GameState.LOBBY || game.getState() == GameState.STARTING) {
+            builder.setLines(gameplayer -> "§7" + dateFormat + " " + game.getID(),
+                    gameplayer -> "",
+                    gameplayer -> MessageManager.get(gamePlayer, "scoreboard.score1").replace("%players%", String.valueOf(game.getPlayers().size())).replace("%max_players%", String.valueOf(game.getSettings().getMaxPlayers())).getTranslated(),
+                    gameplayer -> " ",
+                    gameplayer -> "§fKit: §a" + getKit(gamePlayer),
+                    gameplayer -> "  ",
+                    gameplayer -> "§a" + server);
+        } else if (game.getState() == GameState.INGAME || game.getState() == GameState.PREPARATION) {
+            builder.addLine(gameplayer -> "§7" + dateFormat + " " + game.getID());
+            builder.addLine(gameplayer -> "");
+            for (GameTeam team : TeamManager.getTeams(game)) {
+                builder.addLine(gameplayer ->  (team.getAlivePlayers().isEmpty() ? "§8" : team.getChatColor()) + (team.getPlayers().contains(gameplayer) ? "§l" : "") + team.getName() + " §7(" + team.getAlivePlayers().size() + ")");
+            }
+
+            if (gamePlayer.getTeam().getPlayers().size() > 1){
+            GamePlayer teamMate = gamePlayer.getTeam().getPlayers().stream().filter(p -> p != gamePlayer).collect(Collectors.toList()).get(0);
+            if (teamMate != null) {
+                builder.addLine(gameplayer -> "  ");
+                builder.addLine(gameplayer -> MessageManager.get(gamePlayer, "scoreboard.your_teammate").getTranslated());
+                builder.addLine(gameplayer -> " " + (teamMate.isSpectator() ? "§8" : gamePlayer.getTeam().getTeamColor().getChatColor()) + teamMate.getOnlinePlayer().getName() + " §7- " + (teamMate.isSpectator() ? "§c§lDEAD" : "§f" + (int) teamMate.getOnlinePlayer().getHealth() + "§c❤"));
+            }
+            }
+            builder.addLine(gameplayer -> "    ");
+            builder.addLine(gameplayer -> MessageManager.get(gamePlayer, "scoreboard.score2").replace("%kills%", String.valueOf(gamePlayer.getScoreByName("Kill").getScore())).getTranslated());
+            builder.addLine(gameplayer -> MessageManager.get(gamePlayer, "scoreboard.score3").replace("%assists%", String.valueOf(gamePlayer.getScoreByName("Assist").getScore())).getTranslated());
+            builder.addLine(gameplayer -> "   ");
+            builder.addLine(gameplayer -> "§a" + server);
+        }else if(game.getState() == GameState.ENDING || game.getState() == GameState.RESTARTING) {
+            builder.setLines(
+                    gameplayer -> "§7" + dateFormat + " " + game.getID(),
+                    gameplayer -> "",
+                    gameplayer -> MessageManager.get(gameplayer, "scoreboard.score4").getTranslated(),
+                    gameplayer -> " ",
+                    gameplayer -> MessageManager.get(gameplayer, "scoreboard.score2").replace("%kills%", String.valueOf(gamePlayer.getScoreByName("Kill").getScore())).getTranslated(),
+                    gameplayer -> MessageManager.get(gameplayer, "scoreboard.score3").replace("%assists%", String.valueOf(gamePlayer.getScoreByName("Assist").getScore())).getTranslated(),
+                    gameplayer -> "  ",
+                    gameplayer -> "§a" + server);
+        }
+
+        builder.build();
+    }*/
+
+
+
+    public static String getKit(GamePlayer gamePlayer){
+        if (GameAPI.getKitManager().getKit(gamePlayer) == null){
+            return MessageManager.get(gamePlayer, "scoreboard.kit.none").getTranslated();
+        }else{
+            return GameAPI.getKitManager().getKit(gamePlayer).getName();
+        }
+    }
+}

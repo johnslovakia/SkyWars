@@ -1,0 +1,46 @@
+scoreboard:
+  Waiting:
+    title: "§2§lSkyWars"
+    lines:
+      - "§7%date% %game_id%"
+      - ""
+      - "§fPlayers: §a%players%§a/§a%max_players%"
+      - ""
+      - "§fKit: §a%kit%"
+      - ""
+      - "§aplay.your_server.com"
+  Starting:
+    title: "§2§lSkyWars §7| §f%time%"
+    lines:
+      - "§7%date% %game_id%"
+      - ""
+      - "§fPlayers: §a%players%§a/§a%max_players%"
+      - ""
+      - "§fKit: §a%kit%"
+      - ""
+      - "§aplay.your_server.com"
+  InGame:
+    title: "§2§lSkyWars §7| §f%time%"
+    lines:
+      - "§7%date% %game_id%"
+      - "§fMap: §7%map%"
+      - ""
+      - "§fAlive Enemies: §a%alive_enemies%"
+      - ""
+      - "§fChest refill: §a%chest_refill%"
+      - ""
+      - "§fKills: §a%kills%"
+      - "§fAssists: §a%assists%"
+      - ""
+      - "§aplay.your_server.com"
+  Ending:
+    title: "§2§lSkyWars §7| §f%time%"
+    lines:
+      - "§7%date% %game_id%"
+      - ""
+      - "§aThanks for playing with us."
+      - ""
+      - "§fKills: §a%kills%"
+      - "§fAssists: §a%assists%"
+      - ""
+      - "§aplay.your_server.com"

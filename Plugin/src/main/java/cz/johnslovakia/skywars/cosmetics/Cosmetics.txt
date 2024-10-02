@@ -1,0 +1,415 @@
+package cz.johnslovakia.skywars.cosmetics;
+
+import com.cryptomorin.xseries.XMaterial;
+import cz.johnslovakia.gameapi.GameAPI;
+import cz.johnslovakia.gameapi.gameCosmetics.Cosmetic;
+import cz.johnslovakia.gameapi.gameCosmetics.CosmeticRarity;
+import cz.johnslovakia.gameapi.gameCosmetics.CosmeticsCategory;
+import cz.johnslovakia.gameapi.gameCosmetics.CosmeticsManager;
+import cz.johnslovakia.gameapi.messages.Language;
+import cz.johnslovakia.gameapi.messages.MessageManager;
+import cz.johnslovakia.skywars.utils.DataHandler;
+import cz.johnslovakia.skywars.utils.Util;
+import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class Cosmetics {
+
+    public static List<KillMessage> killMessages = new ArrayList<>();
+
+    public static KillMessage getKillMessage(Cosmetic cosmetic){
+        for (KillMessage killMessage : getKillMessages()){
+            if (killMessage.getCosmetic().equals(cosmetic)){
+                return killMessage;
+            }
+        }
+        return null;
+    }
+
+
+    private static void sendKillMessagePreview(Player player, Cosmetic cosmetic){
+        String messageName = cosmetic.getName().toLowerCase().replaceAll(" ", "_");
+
+        player.sendMessage("");
+        player.sendMessage("§2§lKill messages §7- §a" + cosmetic.getName());
+        player.sendMessage("");
+        player.sendMessage("§a§lChat messages:");
+        player.sendMessage("§aMelee Kill: " + MessageManager.get(player, "chat.kill_message." + messageName + ".melee").replace("%player_color%", "§c").replace("%dead%", "§cPlayer").replace("%killer_color%", "§c").replace("%killer%", "§cKiller").getTranslated());
+        player.sendMessage("§aFall Damage Kill: " + MessageManager.get(player, "chat.kill_message." + messageName + ".fall").replace("%player_color%", "§c").replace("%dead%", "§cPlayer").replace("%killer_color%", "§c").replace("%killer%", "§cKiller").getTranslated());
+        player.sendMessage("§aVoid Kill: " + MessageManager.get(player, "chat.kill_message." + messageName + ".void").replace("%player_color%", "§c").replace("%dead%", "§cPlayer").replace("%killer_color%", "§c").replace("%killer%", "§cKiller").getTranslated());
+        player.sendMessage("§aRanged Kill: " + MessageManager.get(player, "chat.kill_message." + messageName + ".ranged").replace("%player_color%", "§c").replace("%dead%", "§cPlayer").replace("%killer_color%", "§c").replace("%killer%", "§cKiller").getTranslated());
+        player.sendMessage("");
+    }
+
+    public static void loadCosmetics(){
+        CosmeticsManager manager = GameAPI.getCosmeticsManager();
+
+
+        Language czech = Language.getLanguage("czech");
+        Language english = Language.getLanguage("english");
+
+        FileConfiguration config = DataHandler.getMainConfig().getConfig();
+        int KILL_SOUNDS_EPIC = config.getInt("kill_sounds.epic");
+        int KILL_SOUNDS_RARE = config.getInt("kill_sounds.rare");
+        int KILL_SOUNDS_UNCOMMON = config.getInt("kill_sounds.uncommon");
+        int KILL_SOUNDS_COMMON = config.getInt("kill_sounds.common");
+
+        int PROJECTILE_TRAILS_COMMON = config.getInt("projectile_trails.common");
+
+        int FIRST_AND_FINAL_KILL_EFFECTS_LEGENDARY = config.getInt("first_and_final_kill_effects.legendary");
+        int FIRST_AND_FINAL_KILL_EFFECTS_EPIC = config.getInt("first_and_final_kill_effects.epic");
+        int FIRST_AND_FINAL_KILL_EFFECTS_RARE = config.getInt("first_and_final_kill_effects.rare");
+        int FIRST_AND_FINAL_KILL_EFFECTS_UNCOMMON = config.getInt("first_and_final_kill_effects.uncommon");
+        int FIRST_AND_FINAL_KILL_EFFECTS_COMMON = config.getInt("first_and_final_kill_effects.common");
+
+        int KILL_MESSAGES_LEGENDARY = config.getInt("kill_messages.legendary");
+        int KILL_MESSAGES_EPIC = config.getInt("kill_messages.epic");
+        int KILL_MESSAGES_RARE = config.getInt("kill_messages.rare");
+        int KILL_MESSAGES_UNCOMMON = config.getInt("kill_messages.uncommon");
+        int KILL_MESSAGES_COMMON = config.getInt("kill_messages.common");
+
+
+        CosmeticsCategory killSoundsCategory = new CosmeticsCategory("Kill Sounds", new ItemStack(XMaterial.MUSIC_DISC_BLOCKS.parseMaterial()));
+
+        Cosmetic explodeSoundCosmetic = new Cosmetic("Explode Sound", new ItemStack(Material.TNT), KILL_SOUNDS_RARE, CosmeticRarity.RARE);
+        explodeSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Explode Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(explodeSoundCosmetic);
+
+        Cosmetic anvilLandSoundCosmetic = new Cosmetic("Anvil Land Sound", new ItemStack(Material.ANVIL), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        anvilLandSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Anvil Land Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(anvilLandSoundCosmetic);
+
+        Cosmetic glassSoundCosmetic = new Cosmetic("Glass Sound", new ItemStack(Material.GLASS), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        glassSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Glass Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(glassSoundCosmetic);
+
+        Cosmetic eggPopSoundCosmetic = new Cosmetic("Egg Pop Sound", new ItemStack(Material.EGG), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        eggPopSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Egg Pop Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(eggPopSoundCosmetic);
+
+        Cosmetic woofSoundCosmetic = new Cosmetic("Wolf Howl Sound", new ItemStack(XMaterial.WOLF_SPAWN_EGG.parseMaterial()), KILL_SOUNDS_EPIC, CosmeticRarity.EPIC);
+        woofSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Wolf Howl Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(woofSoundCosmetic);
+
+        Cosmetic swimSoundCosmetic = new Cosmetic("Swim Sound", new ItemStack(Material.WATER_BUCKET), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        swimSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Swim Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(swimSoundCosmetic);
+
+        Cosmetic burpSoundCosmetic = new Cosmetic("Burp Sound", new ItemStack(Material.BREAD), KILL_SOUNDS_UNCOMMON, CosmeticRarity.UNCOMMON);
+        burpSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Burp Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(burpSoundCosmetic);
+
+        Cosmetic levelUpSoundCosmetic = new Cosmetic("Level Up Sound", new ItemStack(XMaterial.EXPERIENCE_BOTTLE.parseMaterial()), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        levelUpSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Level Up Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(levelUpSoundCosmetic);
+
+        Cosmetic dragonHitSoundCosmetic = new Cosmetic("Dragon Hit Sound", new ItemStack(GameAPI.getInstance().getVersionSupport().getCustomHead("31d6e3e41145967b32fb63576c63e3057e63beceb73cea18d20fc8547b0b0645")), KILL_SOUNDS_RARE, CosmeticRarity.RARE);
+        dragonHitSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Dragon Hit Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(dragonHitSoundCosmetic);
+
+        /*Cosmetic dragonDeathSoundCosmetic = new Cosmetic("Dragon Death Sound", new ItemStack(Material.DIAMOND_SWORD), 12000, CosmeticRarity.EPIC);
+        dragonDeathSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Dragon Death Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(dragonDeathSoundCosmetic);*/
+
+        Cosmetic BlazeDeathSoundCosmetic = new Cosmetic("Blaze Death Sound", new ItemStack(XMaterial.GOLDEN_SWORD.parseMaterial()), KILL_SOUNDS_UNCOMMON, CosmeticRarity.UNCOMMON);
+        BlazeDeathSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Blaze Death Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(BlazeDeathSoundCosmetic);
+
+        Cosmetic villagerSoundCosmetic = new Cosmetic("Villager Sound", new ItemStack(XMaterial.VILLAGER_SPAWN_EGG.parseMaterial()), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        villagerSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Villager Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(villagerSoundCosmetic);
+
+        Cosmetic MeowSoundCosmetic = new Cosmetic("Meow Sound", new ItemStack(GameAPI.getInstance().getVersionSupport().getCustomHead("13df83a5cdab5a6143d1127e26369636881a194dd3199df5aa9123a4d33ad58a")), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        MeowSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Meow Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(MeowSoundCosmetic);
+
+        Cosmetic ghastMoanSoundCosmetic = new Cosmetic("Ghast Moan Sound", new ItemStack(XMaterial.GHAST_SPAWN_EGG.parseMaterial()), KILL_SOUNDS_COMMON, CosmeticRarity.COMMON);
+        ghastMoanSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Ghast Moan Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(ghastMoanSoundCosmetic);
+
+        Cosmetic witherSoundCosmetic = new Cosmetic("Wither Sound", new ItemStack(XMaterial.WITHER_SKELETON_SKULL.parseMaterial()), KILL_SOUNDS_EPIC, CosmeticRarity.EPIC);
+        witherSoundCosmetic.setConsumer(new Consumer<InventoryClickEvent>() {
+            @Override
+            public void accept(InventoryClickEvent e) {
+                Util.killSound("Wither Sound", (Player) e.getWhoClicked(), null);
+            }
+        });
+        killSoundsCategory.addCosmetic(witherSoundCosmetic);
+
+
+
+
+
+        CosmeticsCategory trailsCategory = new CosmeticsCategory("Projectile Trails", new ItemStack(Material.ARROW));
+
+        Cosmetic flameTrailCosmetic = new Cosmetic("Flame", new ItemStack(Material.FLINT_AND_STEEL), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(flameTrailCosmetic);
+
+        Cosmetic hearthTrailCosmetic = new Cosmetic("Hearth", new ItemStack(Material.REDSTONE_BLOCK), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(hearthTrailCosmetic);
+
+        Cosmetic slimeTrailCosmetic = new Cosmetic("Slime", new ItemStack(Material.SLIME_BALL), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(slimeTrailCosmetic);
+
+        Cosmetic noteTrailCosmetic = new Cosmetic("Note", new ItemStack(Material.JUKEBOX), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(noteTrailCosmetic);
+
+        Cosmetic redstoneTrailCosmetic = new Cosmetic("Redstone", new ItemStack(Material.REDSTONE), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(redstoneTrailCosmetic);
+
+        Cosmetic greenSparksTrailCosmetic = new Cosmetic("Green Sparks", new ItemStack(Material.EMERALD), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(greenSparksTrailCosmetic);
+
+        Cosmetic lavaTrailCosmetic = new Cosmetic("Lava", new ItemStack(Material.LAVA_BUCKET), PROJECTILE_TRAILS_COMMON, CosmeticRarity.COMMON);
+        trailsCategory.addCosmetic(lavaTrailCosmetic);
+
+
+
+        CosmeticsCategory killEffectsCategory = new CosmeticsCategory("Kill Effects", new ItemStack(Material.DIAMOND_SWORD));
+
+        Cosmetic TNTKillEffectCosmetic = new Cosmetic("TNT", new ItemStack(Material.TNT), FIRST_AND_FINAL_KILL_EFFECTS_COMMON, CosmeticRarity.COMMON);
+        //killEffectsCaategory.addCosmetic(TNTKillEffectCosmetic);
+
+        Cosmetic LightningStrikeKillEffectCosmetic = new Cosmetic("Lightning Strike", new ItemStack(Material.IRON_AXE), FIRST_AND_FINAL_KILL_EFFECTS_COMMON, CosmeticRarity.COMMON);
+        //killEffectsCaategory.addCosmetic(LightningStrikeKillEffectCosmetic);
+
+        Cosmetic FireworkKillEffectCosmetic = new Cosmetic("Firework", new ItemStack(XMaterial.FIREWORK_ROCKET.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_UNCOMMON, CosmeticRarity.UNCOMMON);
+        killEffectsCategory.addCosmetic(FireworkKillEffectCosmetic);
+
+        Cosmetic HearthKillEffectCosmetic = new Cosmetic("Hearth", new ItemStack(XMaterial.RED_DYE.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_COMMON, CosmeticRarity.COMMON);
+        killEffectsCategory.addCosmetic(HearthKillEffectCosmetic);
+
+        Cosmetic TornadoKillEffectCosmetic = new Cosmetic("Tornado", new ItemStack(XMaterial.LIGHT_GRAY_DYE.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_LEGENDARY, CosmeticRarity.LEGENDARY);
+        //killEffectsCategory.addCosmetic(TornadoKillEffectCosmetic);
+
+        Cosmetic WaveKillEffectCosmetic = new Cosmetic("Wave", new ItemStack(Material.WATER_BUCKET), FIRST_AND_FINAL_KILL_EFFECTS_EPIC, CosmeticRarity.EPIC);
+        //killEffectsCategory.addCosmetic(WaveKillEffectCosmetic);
+
+        Cosmetic SatanKillEffectCosmetic = new Cosmetic("Satan", new ItemStack(XMaterial.FIRE_CHARGE.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_LEGENDARY, CosmeticRarity.LEGENDARY);
+        //killEffectsCategory.addCosmetic(SatanKillEffectCosmetic);
+
+        Cosmetic SquidKillEffectCosmetic = new Cosmetic("Squid", new ItemStack(XMaterial.SQUID_SPAWN_EGG.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_RARE, CosmeticRarity.RARE);
+        killEffectsCategory.addCosmetic(SquidKillEffectCosmetic);
+
+        Cosmetic RedstoneKillEffectCosmetic = new Cosmetic("Redstone", new ItemStack(XMaterial.REDSTONE_BLOCK.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_COMMON, CosmeticRarity.COMMON);
+        killEffectsCategory.addCosmetic(RedstoneKillEffectCosmetic);
+
+        Cosmetic BurningShoesKillEffectCosmetic = new Cosmetic("Burning Shoes", new ItemStack(XMaterial.GOLDEN_BOOTS.parseMaterial()), FIRST_AND_FINAL_KILL_EFFECTS_COMMON, CosmeticRarity.COMMON);
+        killEffectsCategory.addCosmetic(BurningShoesKillEffectCosmetic);
+
+
+
+        CosmeticsCategory killMessageCategory = new CosmeticsCategory("Kill messages", new ItemStack(Material.IRON_SWORD));
+
+        KillMessage greekMythologyMessage = new KillMessage(killMessageCategory, "Greek Mythology Themed");
+
+        greekMythologyMessage.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.greek_mythology_themed.melee");
+        greekMythologyMessage.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.greek_mythology_themed.fall");
+        greekMythologyMessage.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.greek_mythology_themed.void");
+        greekMythologyMessage.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.greek_mythology_themed.ranged");
+        killMessages.add(greekMythologyMessage);
+
+        Cosmetic greekMythology = new Cosmetic("Greek Mythology Themed", new ItemStack(XMaterial.GOLDEN_SWORD.parseMaterial()), KILL_MESSAGES_RARE, CosmeticRarity.RARE);
+        greekMythology.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), greekMythology));
+        killMessageCategory.addCosmetic(greekMythology);
+
+
+
+        KillMessage dragon = new KillMessage(killMessageCategory, "Dragon");
+
+        dragon.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.dragon.melee");
+        dragon.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.dragon.fall");
+        dragon.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.dragon.void");
+        dragon.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.dragon.ranged");
+        killMessages.add(dragon);
+
+        Cosmetic dragonCosmetic = new Cosmetic("Dragon", new ItemStack(GameAPI.getInstance().getVersionSupport().getCustomHead("31d6e3e41145967b32fb63576c63e3057e63beceb73cea18d20fc8547b0b0645")), KILL_MESSAGES_EPIC, CosmeticRarity.EPIC);
+        dragonCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), dragonCosmetic));
+        killMessageCategory.addCosmetic(dragonCosmetic);
+
+
+
+        KillMessage toilet = new KillMessage(killMessageCategory, "Toilet");
+
+        toilet.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.toilet.melee");
+        toilet.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.toilet.fall");
+        toilet.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.toilet.void");
+        toilet.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.toilet.ranged");
+        killMessages.add(toilet);
+
+        Cosmetic toiletCosmetic = new Cosmetic("Toilet", new ItemStack(Material.HOPPER), KILL_MESSAGES_RARE, CosmeticRarity.RARE);
+        toiletCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), toiletCosmetic));
+        killMessageCategory.addCosmetic(toiletCosmetic);
+
+
+        KillMessage glorious = new KillMessage(killMessageCategory, "Glorious");
+
+        glorious.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.glorious.melee");
+        glorious.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.glorious.fall");
+        glorious.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.glorious.void");
+        glorious.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.glorious.ranged");
+        killMessages.add(glorious);
+
+        Cosmetic gloriousCosmetic = new Cosmetic("Glorious", new ItemStack(XMaterial.GOLDEN_SWORD.parseMaterial()), KILL_MESSAGES_LEGENDARY, CosmeticRarity.LEGENDARY);
+        gloriousCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), gloriousCosmetic));
+        killMessageCategory.addCosmetic(gloriousCosmetic);
+
+
+
+        KillMessage wizard = new KillMessage(killMessageCategory, "Wizard");
+
+        wizard.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.wizard.melee");
+        wizard.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.wizard.fall");
+        wizard.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.wizard.void");
+        wizard.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.wizard.ranged");
+        killMessages.add(wizard);
+
+        Cosmetic wizardCosmetic = new Cosmetic("Wizard", new ItemStack(Material.BLAZE_ROD), KILL_MESSAGES_RARE, CosmeticRarity.RARE);
+        wizardCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), wizardCosmetic));
+        killMessageCategory.addCosmetic(wizardCosmetic);
+
+
+        KillMessage ninja = new KillMessage(killMessageCategory, "Ninja");
+
+        ninja.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.ninja.melee");
+        ninja.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.ninja.fall");
+        ninja.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.ninja.void");
+        ninja.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.ninja.ranged");
+        killMessages.add(ninja);
+
+        Cosmetic ninjaCosmetic = new Cosmetic("Ninja", new ItemStack(Material.NETHER_STAR), KILL_MESSAGES_EPIC, CosmeticRarity.EPIC);
+        ninjaCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), ninjaCosmetic));
+        killMessageCategory.addCosmetic(ninjaCosmetic);
+
+        
+        
+        //NEW:
+        KillMessage genAlpha = new KillMessage(killMessageCategory, "Gen Alpha");
+
+        genAlpha.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.gen_alpha.melee");
+        genAlpha.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.gen_alpha.fall");
+        genAlpha.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.gen_alpha.void");
+        genAlpha.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.gen_alpha.ranged");
+        killMessages.add(genAlpha);
+
+        Cosmetic genAlphaCosmetic = new Cosmetic("Gen Alpha", GameAPI.getInstance().getVersionSupport().getCustomHead("760cdc9a43b1cd35bbe47ab50fd25faa7cd218bc7ec66e2227df664572748cc4"), KILL_MESSAGES_LEGENDARY, CosmeticRarity.LEGENDARY);
+        genAlphaCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), genAlphaCosmetic));
+        killMessageCategory.addCosmetic(genAlphaCosmetic);
+
+
+
+        KillMessage enchanted = new KillMessage(killMessageCategory, "Enchanted");
+
+        enchanted.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.enchanted.melee");
+        enchanted.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.enchanted.fall");
+        enchanted.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.enchanted.void");
+        enchanted.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.enchanted.ranged");
+        killMessages.add(enchanted);
+
+        Cosmetic enchantedCosmetic = new Cosmetic("Enchanted", new ItemStack(XMaterial.ENCHANTING_TABLE.parseMaterial()), KILL_MESSAGES_UNCOMMON, CosmeticRarity.UNCOMMON);
+        enchantedCosmetic.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), enchantedCosmetic));
+        killMessageCategory.addCosmetic(enchantedCosmetic);
+
+
+        KillMessage dramatic = new KillMessage(killMessageCategory, "Dramatic");
+
+        dramatic.addMessage(KillMessage.DeadCause.MELEE, "chat.kill_message.dramatic.melee");
+        dramatic.addMessage(KillMessage.DeadCause.FALL, "chat.kill_message.dramatic.fall");
+        dramatic.addMessage(KillMessage.DeadCause.VOID, "chat.kill_message.dramatic.void");
+        dramatic.addMessage(KillMessage.DeadCause.RANGED, "chat.kill_message.dramatic.ranged");
+        killMessages.add(dramatic);
+
+        Cosmetic dramaticMessage = new Cosmetic("Dramatic", new ItemStack(XMaterial.INK_SAC.parseMaterial()), KILL_MESSAGES_COMMON, CosmeticRarity.COMMON);
+        dramaticMessage.setConsumer(e -> sendKillMessagePreview((Player) e.getWhoClicked(), dramaticMessage));
+        killMessageCategory.addCosmetic(dramaticMessage);
+
+
+
+        manager.addCategory(killMessageCategory);
+        manager.addCategory(killEffectsCategory);
+        manager.addCategory(trailsCategory);
+        manager.addCategory(killSoundsCategory);
+        GameAPI.getInstance().setCosmeticsManager(manager);
+    }
+
+    public static List<KillMessage> getKillMessages() {
+        return killMessages;
+    }
+}

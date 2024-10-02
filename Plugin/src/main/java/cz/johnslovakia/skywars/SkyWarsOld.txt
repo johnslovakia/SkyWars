@@ -1,0 +1,635 @@
+package cz.johnslovakia.skywars;
+
+import cz.johnslovakia.gameapi.GameAPI;
+import cz.johnslovakia.gameapi.Minigame;
+import cz.johnslovakia.gameapi.arena.Area;
+import cz.johnslovakia.gameapi.arena.Arena;
+import cz.johnslovakia.gameapi.arena.ArenaLocation;
+import cz.johnslovakia.gameapi.arena.ArenaSettings;
+import cz.johnslovakia.gameapi.game.*;
+import cz.johnslovakia.gameapi.gameCosmetics.CosmeticsManager;
+import cz.johnslovakia.gameapi.kit.KitManager;
+import cz.johnslovakia.gameapi.managers.GameManager;
+import cz.johnslovakia.gameapi.users.PlayerManager;
+import cz.johnslovakia.gameapi.managers.TeamManager;
+import cz.johnslovakia.gameapi.managers.WorldManager;
+import cz.johnslovakia.gameapi.messages.Language;
+import cz.johnslovakia.gameapi.messages.MessageManager;
+import cz.johnslovakia.gameapi.perk.PerkManager;
+import cz.johnslovakia.gameapi.quests.QuestManager;
+import cz.johnslovakia.gameapi.rewards.Economy;
+import cz.johnslovakia.gameapi.rewards.interfaces.BalanceRunnable;
+import cz.johnslovakia.gameapi.rewards.interfaces.OnAdd;
+import cz.johnslovakia.gameapi.rewards.interfaces.OnRemove;
+import cz.johnslovakia.gameapi.stats.StatsManager;
+import cz.johnslovakia.gameapi.util.BukkitSerialization;
+import cz.johnslovakia.gameapi.utils.ConfigAPI;
+import cz.johnslovakia.gameapi.utils.Logger;
+import cz.johnslovakia.gameapi.util.database.MinigameTable;
+import cz.johnslovakia.gameapi.util.database.MySQL;
+import cz.johnslovakia.gameapi.util.database.Type;
+import cz.johnslovakia.skywars.api.Effects;
+import cz.johnslovakia.skywars.api.VersionSupport;
+import cz.johnslovakia.skywars.boards.Scoreboard;
+import cz.johnslovakia.skywars.chest.ChestManager;
+import cz.johnslovakia.skywars.cosmetics.Cosmetics;
+import cz.johnslovakia.skywars.kits.*;
+import cz.johnslovakia.skywars.listeners.*;
+import cz.johnslovakia.skywars.perks.*;
+import cz.johnslovakia.skywars.quests.*;
+import cz.johnslovakia.skywars.utils.CoinsAPIHandler;
+import cz.johnslovakia.skywars.utils.Commands;
+import cz.johnslovakia.skywars.utils.DataHandler;
+import cz.johnslovakia.skywars.waitingItems.WaitingItems;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.*;
+import java.util.*;
+
+public final class SkyWars extends JavaPlugin {
+
+    private static SkyWars instance;
+    private static KitManager kitManager;
+    private static PerkManager perkManager;
+
+    private static Economy mainEconomy;
+
+
+    private VersionSupport nmsHandler;
+    private Effects EffectsHandler;
+
+
+    @Override
+    public void onEnable() {
+        instance = this;
+
+
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
+        File mapsFolder = new File(getDataFolder(), "maps");
+        if (!mapsFolder.exists()) {
+            mapsFolder.mkdirs();
+        }
+
+
+        File config = new File(getDataFolder(), "config.yml");
+        /*if (!config.exists()) {
+            saveResource("config.yml", false);
+        }*/
+
+        if (!config.exists()) {
+            /*try (InputStream fileInputStream = getResource("config.yml"); FileOutputStream fileOutputStream = new FileOutputStream(config)) {
+                fileOutputStream.getChannel().transferFrom(Channels.newChannel(fileInputStream), 0, Integer.MAX_VALUE);
+            } catch (IOException e) {
+                Logger.log("Failed to create config.yml!", Logger.LogType.ERROR);
+            }*/
+            DataHandler.createMainConfig();
+        }
+
+        //this.saveDefaultConfig();
+
+
+
+        getCommand("skywars").setExecutor(new Commands());
+
+
+        PluginManager pm = this.getServer().getPluginManager();
+        pm.registerEvents(new JoinQuitListener(), this);
+
+        loadMessages();
+        init();
+
+
+
+        //VERSION SUPPORT
+        String packageName = this.getServer().getClass().getPackage().getName();
+        String version = packageName.substring(packageName.lastIndexOf('.') + 1);
+
+
+        try {
+            final Class<?> clazz = Class.forName("cz.johnslovakia.skywars.nms." + version + ".NMSHandler");
+            if (VersionSupport.class.isAssignableFrom(clazz)) {
+                this.nmsHandler = (VersionSupport) clazz.getConstructor().newInstance();
+            }
+
+            final Class<?> clazz2 = Class.forName("cz.johnslovakia.skywars.nms." + version + ".EffectsHandler");
+            if (Effects.class.isAssignableFrom(clazz2)) {
+                this.EffectsHandler = (Effects) clazz2.getConstructor().newInstance();
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
+            this.getLogger().severe("Could not find support for this Spigot version.");
+            this.setEnabled(false);
+            return;
+        }
+        this.getLogger().info("Loading support for " + version);
+    }
+
+
+    public void init() {
+
+        //coins = new Economy("coins", ChatColor.GOLD, 1);
+        mainEconomy = new Economy("coins", ChatColor.GOLD, 1);
+
+        if (Bukkit.getPluginManager().getPlugin("CoinsAPINB") != null){
+            CoinsAPIHandler.hook(mainEconomy);
+        }else {
+            if (DataHandler.getMainConfig().getConfig().getBoolean("useVault")) {
+                if (getServer().getPluginManager().getPlugin("Vault") == null) {
+                    Logger.log("There is no Vault plugin on your server! To make Crystals work, either set \"useVault\" to \"false\" in crystals/config.yml or upload the Vault Plugin!", Logger.LogType.ERROR);
+                    return;
+                }
+
+                RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+                if (rsp != null) {
+                    net.milkbowl.vault.economy.Economy vaultEconomy = rsp.getProvider();
+                    Economy vaultEco = new Economy(GameAPI.getInstance().getVaultEconomy().getName(), ChatColor.GOLD, 1);
+
+                    vaultEco.setOnAdd(new OnAdd() {
+                        @Override
+                        public void reward(GamePlayer gamePlayer, Integer integer) {
+                            vaultEconomy.depositPlayer(gamePlayer.getOnlinePlayer(), integer);
+                        }
+                    });
+                    vaultEco.setOnRemove(new OnRemove() {
+                        @Override
+                        public void remove(GamePlayer gamePlayer, Integer integer) {
+                            vaultEconomy.withdrawPlayer(gamePlayer.getOnlinePlayer(), integer);
+                        }
+                    });
+                    vaultEco.setBalanceRunnable(new BalanceRunnable() {
+                        @Override
+                        public Integer getBalance(GamePlayer gamePlayer) {
+                            return (int) GameAPI.getInstance().getVaultEconomy().getBalance(gamePlayer.getOnlinePlayer());
+                        }
+                    });
+
+                    mainEconomy = vaultEco;
+                }
+            } else {
+                mainEconomy.setEconomyAutomatically(true, true);
+            }
+        }
+
+        Economy souls = new Economy("souls", ChatColor.DARK_AQUA, 2);
+        souls.setEconomyAutomatically(true, false);
+
+        //levelXP = new Economy("Level experience", ChatColor.AQUA, 2);
+        //levelXP.setEconomyAutomatically(true);
+
+        /*if (DataHandler.getMainConfig().getConfig().getBoolean("useVault")){
+            if (getServer().getPluginManager().getPlugin("Vault") == null) {
+                Logger.log("There is no Vault plugin on your server! To make SkyWars work, either set \"useVault\" to \"false\" in SkyWars/config.yml or upload the Vault Plugin!", Logger.LogType.ERROR);
+                return;
+            }
+
+            RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+            if (rsp != null) {
+                net.milkbowl.vault.economy.Economy vaultEconomy = rsp.getProvider();
+                Economy vaultEco = new Economy(GameAPI.getInstance().getVaultEconomy().getName(), ChatColor.GOLD, 1);
+
+                vaultEco.setOnAdd(new OnAdd() {
+                    @Override
+                    public void reward(GamePlayer gamePlayer, Integer integer) {
+                        vaultEconomy.depositPlayer(gamePlayer.getOnlinePlayer(), integer);
+                    }
+                });
+                vaultEco.setOnRemove(new OnRemove() {
+                    @Override
+                    public void remove(GamePlayer gamePlayer, Integer integer) {
+                        vaultEconomy.withdrawPlayer(gamePlayer.getOnlinePlayer(), integer);
+                    }
+                });
+                vaultEco.setBalanceRunnable(new BalanceRunnable() {
+                    @Override
+                    public Integer getBalance(GamePlayer gamePlayer) {
+                        return (int) GameAPI.getInstance().getVaultEconomy().getBalance(gamePlayer.getOnlinePlayer());
+                    }
+                });
+
+                mainEconomy = vaultEco;
+            }
+        }else{
+            mainEconomy.setEconomyAutomatically(true, true);
+        }*/
+
+
+        MinigameSettings settings = new MinigameSettings();
+        settings.setGameTime(DataHandler.getMainConfig().getConfig().getInt("game_time") != 0 ? DataHandler.getMainConfig().getConfig().getInt("game_time") : 480);
+        settings.setMaxPlayers(DataHandler.getMainConfig().getConfig().getInt("max_players") != 0 ? DataHandler.getMainConfig().getConfig().getInt("max_players") : 12);
+        settings.setMinPlayers(DataHandler.getMainConfig().getConfig().getInt("min_players") != 0 ? DataHandler.getMainConfig().getConfig().getInt("min_players") : 6);
+        settings.setStartingTime(DataHandler.getMainConfig().getConfig().getInt("starting_time") != 0 ? DataHandler.getMainConfig().getConfig().getInt("starting_time") : 60);
+        settings.setPreparationTime(5);
+        settings.setReducedPlayers(DataHandler.getMainConfig().getConfig().getInt("players_needed_to_reduce_starting_time") != 0 ? DataHandler.getMainConfig().getConfig().getInt("players_needed_to_reduce_starting_time") : 6);
+        settings.setReducedTime(DataHandler.getMainConfig().getConfig().getInt("reduced_time") != 0 ? DataHandler.getMainConfig().getConfig().getInt("reduced_time") : 20);
+        settings.setUseTeams(false);
+        settings.setAnvilCommand(true);
+        settings.setWorkbenchCommand(true);
+        settings.setDisplayHealthBar(true);
+        settings.setAutoJoin(false);
+        settings.setEndGameTeleport((getConfig().get("teleportToWaitingLobbyAfterEnd") != null ? getConfig().getBoolean("teleportToWaitingLobbyAfterEnd") : false));
+
+
+        MySQL mySQL = new MySQL(DataHandler.getMainConfig().getConfig(), "mysql");
+
+        if (mySQL.getConnection() == null){
+            Logger.log("I don't have a database connection! I can't continue adding maps and arenas. Database is required! Set up the database in /SkyWars/config.yml", Logger.LogType.ERROR);
+            return;
+        }
+
+        Minigame minigame = new Minigame(getInstance(), mySQL, "SkyWars", settings);
+
+        minigame.addMinigameTable(new MinigameTable());
+        minigame.addEconomy(mainEconomy);
+        minigame.addEconomy(souls);
+        //minigame.addEconomy(levelXP);
+
+        minigame.setMinigameDescription("chat.minigame_description");
+
+
+
+        StatsManager statsManager = new StatsManager();
+        GameAPI.setStatsManager(statsManager);
+
+
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("Win")
+                .setEconomyReward(mainEconomy, 50)
+                .setEconomyReward(souls, 5)
+                .createStat("Wins")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("Loss")
+                .createStat("Losses")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("1stKiller")
+                .setDisplayName("1st killer")
+                .setEconomyReward(mainEconomy, 30)
+                .setEconomyReward(souls, 3)
+                .setAllowedMessage(false)
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("2ndKiller")
+                .setDisplayName("2nd killer")
+                .setEconomyReward(mainEconomy, 25)
+                .setEconomyReward(souls, 2)
+                .setAllowedMessage(false)
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("3rdKiller")
+                .setDisplayName("3rd killer")
+                .setEconomyReward(mainEconomy, 20)
+                .setEconomyReward(souls, 1)
+                .setAllowedMessage(false)
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("Kill")
+                .setEconomyReward(mainEconomy, 5)
+                .setEconomyReward(souls, 3)
+                .setScoreRanking(true)
+                .createStat("Kills")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("Death")
+                .createStat("Deaths")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("Assist")
+                .setEconomyReward(mainEconomy, 3)
+                .setEconomyReward(souls, 1)
+                .createStat("Assists")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("FirstBlood")
+                .setDisplayName("First Blood")
+                .setEconomyReward(mainEconomy, 15)
+                .setEconomyReward(souls, 4)
+                //.setEconomyReward(levelXP, 25)
+                .createStat("First Bloods")
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("TimePlayed")
+                .setDisplayName("Time Played")
+                .setEconomyReward(mainEconomy, 5)
+                .build());
+        PlayerManager.registerPlayersScore(GamePlayerScore.builder()
+                .setName("EnchantItem")
+                .setDisplayName("Enchant Item")
+                .setEconomyReward(mainEconomy, 2)
+                .setAllowedMessage(true)
+                .build());
+
+
+
+        statsManager.createDatabaseTable();
+
+
+
+
+        kitManager = new KitManager("SkyWars", mainEconomy, false);
+        perkManager = new PerkManager("SkyWars", souls);
+        QuestManager questManager = new QuestManager("SkyWars");
+
+        GameAPI.getInstance().setCosmeticsManager(new CosmeticsManager("SkyWars", mainEconomy));
+        Cosmetics.loadCosmetics();
+
+        kitManager.registerKit(new Knight(kitManager));
+        kitManager.registerKit(new Viking(kitManager));
+        kitManager.registerKit(new Scout(kitManager));
+        kitManager.registerKit(new Healer(kitManager));
+        kitManager.registerKit(new Hunter(kitManager));
+        kitManager.registerKit(new Armorer(kitManager));
+        kitManager.registerKit(new Enderman(kitManager));
+        kitManager.registerKit(new Ninja(kitManager));
+        kitManager.registerKit(new BaseballPlayer(kitManager));
+        kitManager.registerKit(new Archer(kitManager));
+        kitManager.registerKit(new Armorsmith(kitManager));
+        kitManager.registerKit(new Pyro(kitManager));
+
+
+        perkManager.registerPerk(new Absorption(perkManager));
+        perkManager.registerPerk(new ArrowRecovery(perkManager));
+        perkManager.registerPerk(new BlazingArrow(perkManager));
+        perkManager.registerPerk(new Digger(perkManager));
+        perkManager.registerPerk(new Ender(perkManager));
+        perkManager.registerPerk(new LuckyCharm(perkManager));
+        perkManager.registerPerk(new Rambo(perkManager));
+        perkManager.registerPerk(new ResistanceBoost(perkManager));
+        perkManager.registerPerk(new VoidScavenger(perkManager));
+
+
+
+        questManager.registerQuest(new DailyQuest1());
+        questManager.registerQuest(new DailyQuest2());
+        questManager.registerQuest(new DailyQuest3());
+        questManager.registerQuest(new DailyQuest4());
+        questManager.registerQuest(new DailyQuest5());
+        questManager.registerQuest(new DailyQuest6());
+
+        questManager.registerQuest(new WeeklyQuest1());
+        questManager.registerQuest(new WeeklyQuest2());
+        questManager.registerQuest(new WeeklyQuest3());
+        questManager.registerQuest(new WeeklyQuest4());
+        questManager.registerQuest(new WeeklyQuest5());
+
+
+
+
+        WorldManager.loadLobbyWorld(Objects.requireNonNull(DataHandler.getMainConfig().getConfig().getString("lobbyPoint.World")));
+        Location lobbyPoint = DataHandler.getMainConfig().getLocation("lobbyPoint");
+        if (lobbyPoint == null){
+            Logger.log("Set up the LobbyPoint! /SkyWars howToSetup", Logger.LogType.ERROR);
+            return;
+        }
+
+
+        int gamesPerServer = DataHandler.getMainConfig().getConfig().getInt("gamesPerServer");
+        if (gamesPerServer == 0){
+            gamesPerServer = 3;
+        }
+
+
+        for (int i = 1; i <= gamesPerServer; i++){
+            //String id = Util.randomString(6, true, true, false);
+
+
+
+            List<Arena> arenas = new ArrayList<>();
+            ConfigAPI mConfig = DataHandler.getMapsConfig();
+            if (mConfig.getConfig().getConfigurationSection("maps") != null) {
+                for (String key : mConfig.getConfig().getConfigurationSection("maps").getKeys(false)) {
+
+                    String creators = mConfig.getConfig().getString("maps." + key + ".authors");
+                    Arena arena = new Arena(key, creators);
+
+                    if (mConfig.getConfig().get("maps." + key + ".icon") != null){
+                        try {
+                            arena.setIcon(BukkitSerialization.itemStackFromBase64(mConfig.getConfig().getString("maps." + key + ".icon")));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    ArenaLocation spectatorSpawn = mConfig.getArenaLocation("SpectatorSpawn", "maps." + key + ".spectatorSpawn");
+                    arena.setSpectatorSpawn(spectatorSpawn);
+
+                    Map<String, Location> spawnPoints = new HashMap<>();
+                    if (mConfig.getConfig().getConfigurationSection("maps." + key + ".spawnPoints") != null) {
+                        for (String uuid : mConfig.getConfig().getConfigurationSection("maps." + key + ".spawnPoints").getKeys(false)) {
+
+                            ArenaLocation spawn = mConfig.getArenaLocation(uuid, "maps." + key + ".spawnPoints." + uuid, true);
+                            arena.addSpawn(spawn);
+
+                            //arena.addSpawn(mConfig.getLocation("maps." + key + ".spawnPoints." + uuid));
+                        }
+                    }else{
+                        Logger.log("Map " + key + " is not set up! You can find out how to set up a map by typing /SkyWars howtosetupmap", Logger.LogType.WARNING);
+                        continue;
+                    }
+
+
+
+                    ArenaLocation loc1 = mConfig.getArenaLocation(key + "_pos1", "maps." + key + ".pos1");
+                    ArenaLocation loc2 = mConfig.getArenaLocation(key + "_pos2", "maps." + key + ".pos2");
+                    Area area = new Area(arena, loc1, loc2, "ARENA");
+
+                    area.setBorder(true);
+                    arena.setBorder(area);
+
+                    ArenaSettings aSettings = area.getSettings();
+                    aSettings.setCanBreakAll(true);
+                    aSettings.setCanPlaceAll(true);
+                    aSettings.allowChat(true);
+                    aSettings.setCanPvP(true);
+                    aSettings.setAllowFoodLevelChange(false);
+                    aSettings.setAllowWeatherChange(false);
+                    aSettings.setAllowItemDrop(true);
+                    aSettings.setAllowGhastFireballExplosion(true);
+                    aSettings.setAllowChestAccess(true);
+                    aSettings.setAllowFireSpread(false);
+                    aSettings.setAllowTNTExplosion(true);
+                    aSettings.setAllowWaterFlow(true);
+                    aSettings.setAllowLavaFlow(false);
+                    aSettings.setAllowLavaFire(false);
+                    aSettings.setAllowItemDrop(true);
+                    aSettings.setKeepInventory(true);
+                    aSettings.setAllowEnderpearlFallDamage(false);
+
+                    arena.registerArea(area);
+
+                    arenas.add(arena);
+                }
+            } else {
+                Logger.log("No map is set, I can't continue adding games. You can find out how to set up a map by typing /SkyWars howtosetupmap", Logger.LogType.ERROR);
+                return;
+            }
+
+
+
+
+            String abc = switch (i) {
+                case 2 -> "b";
+                case 3 -> "c";
+                case 4 -> "d";
+                case 5 -> "e";
+                case 6 -> "f";
+                case 7 -> "g";
+                case 8 -> "h";
+                default -> "a";
+            };
+            Game game = new Game("SkyWars-" + i, arenas, lobbyPoint);
+            GameManager.registerGame(game);
+
+            new ChestManager(game);
+        }
+
+
+        WaitingItems.registerItems();
+
+
+        PluginManager pm = this.getServer().getPluginManager();
+        pm.registerEvents(new BlockBreakListener(), this);
+        pm.registerEvents(new InventoryCloseListener(), this);
+        pm.registerEvents(new BlockPlaceListener(), this);
+        pm.registerEvents(new InteractListener(), this);
+        pm.registerEvents(new GameEndListener(), this);
+        pm.registerEvents(new PlayerDeathListener(), this);
+        pm.registerEvents(new PlayerTeleportListener(), this);
+        pm.registerEvents(new CountdownListener(), this);
+        pm.registerEvents(new TNTandFireballListener(), this);
+        pm.registerEvents(new InventoryClickListener(), this);
+        pm.registerEvents(new Scoreboard(), this);
+        pm.registerEvents(new PotionSplashListener(), this);
+        pm.registerEvents(new ItemConsumeListener(), this);
+        pm.registerEvents(new PreparationStartListener(), this);
+        pm.registerEvents(new ProjectileLaunchListener(), this);
+        pm.registerEvents(new MotdListener(), this);
+        pm.registerEvents(new EnchantingTable(), this);
+        pm.registerEvents(new GameResetListener(), this);
+    }
+
+
+    private void checkFiles(){
+        File messagesFolder = new File(getDataFolder(), "languages");
+
+        if (!messagesFolder.exists()) {
+            messagesFolder.mkdirs();
+        }
+
+        File czech = new File(messagesFolder, "czech.yml");
+        if (!czech.exists()) {
+            saveResource("languages/czech.yml", false);
+        }
+
+        File english = new File(messagesFolder, "english.yml");
+        if(!english.exists()) {
+            saveResource("languages/english.yml", false);
+        }
+
+        File czechScoreboard = new File(messagesFolder, "czech_scoreboard.yml");
+        if (!czechScoreboard.exists()) {
+            saveResource("languages/czech_scoreboard.yml", false);
+        }
+        File englishScoreboard = new File(messagesFolder, "english_scoreboard.yml");
+        if (!englishScoreboard.exists()) {
+            saveResource("languages/english_scoreboard.yml", false);
+        }
+    }
+
+
+    private void loadMessages() {
+        File messagesFolder = new File(getDataFolder(), "languages");
+
+        checkFiles();
+
+        File[] messageFiles = messagesFolder.listFiles();
+        if (messageFiles != null) {
+            for (File file : messageFiles) {
+                loadMessagesFromFile(file);
+            }
+        }
+    }
+
+    private void loadMessagesFromFile(File file) {
+        String nr = "\n";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                int colonIndex = line.indexOf(':');
+                if (colonIndex != -1) {
+                    String key = line.substring(0, colonIndex).trim();
+                    String value = line.substring(colonIndex + 1).trim();
+
+                    if (file.getName().contains("scoreboard")){
+                        continue;
+                    }
+                    String languageName = file.getName().replace(".yml", "");
+                    Language language = Language.getLanguage(languageName);
+                    if (language == null){
+                        language = Language.addLanguage(new Language(languageName));
+                    }
+
+                    String message = value.replace("\"", "");
+                    MessageManager.addMessage(key, language, message);
+                }
+            }
+        } catch (IOException e) {
+            getLogger().warning("Nastala chyba při načítání souboru " + file.getName() + ": " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        instance = null;
+
+        for (Player player : Bukkit.getOnlinePlayers()){
+            player.kickPlayer("§cServer restarting... ");
+        }
+    }
+
+    public void winPlayer(Game game, GamePlayer gamePlayer){
+        if (gamePlayer == null){
+            game.endGame(null);
+            return;
+        }
+
+        gamePlayer.getScoreByName("Win").increaseScore();
+        game.getPlayers().stream().filter(loser -> loser != gamePlayer).forEach(loser -> loser.getScoreByName("Loss").increaseScore());
+        game.endGame(gamePlayer);
+    }
+
+
+    public static KitManager getKitManager() {
+        return kitManager;
+    }
+
+    public static PerkManager getPerkManager() {
+        return perkManager;
+    }
+
+    public static SkyWars getInstance() {
+        return instance;
+    }
+
+    public static Economy getMainEconomy() {
+        return mainEconomy;
+    }
+
+    public VersionSupport getVersionSupport() {
+        return nmsHandler;
+    }
+
+    public Effects getEffectsHandler() {
+        return EffectsHandler;
+    }
+}
