@@ -5,6 +5,7 @@ import cz.johnslovakia.gameapi.events.GamePlayerDeathEvent;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import cz.johnslovakia.skywars.events.ChestLootEvent;
 import org.bukkit.event.Listener;
@@ -38,7 +39,7 @@ public class MeteoriteDiscoverer implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<ChestLootEvent> trigger = new Trigger<>(ChestLootEvent.class,
-                ChestLootEvent::getGamePlayer,
+                new Mapper.SingleMapper<>(ChestLootEvent::getGamePlayer),
                 event -> event.getGamePlayer() != null && event.getGamePlayer().getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

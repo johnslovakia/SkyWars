@@ -51,15 +51,10 @@ public class Survivor implements Quest, Listener {
 
 
 
-    int playersAtStart;
-
-    @EventHandler
-    public void onGameStart(GameStartEvent e) {
-        playersAtStart = e.getGame().getPlayers().size();
-    }
 
     @EventHandler
     public void onGamePlayerDeath(GamePlayerDeathEvent e) {
+        int playersAtStart = (int) e.getGame().getMetadata().get("players_at_start");
         if ((e.getGame().getPlayers().size() / 2) <= playersAtStart){
             for (GamePlayer gamePlayer : e.getGame().getPlayers().stream().filter(gamePlayer -> gamePlayer.getPlayerData().getQuestsByStatus(PlayerQuestData.Status
                     .IN_PROGRESS).contains(this)).toList()){

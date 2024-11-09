@@ -14,7 +14,6 @@ import cz.johnslovakia.gameapi.users.GamePlayer;
 
 public class InventoryCloseListener implements Listener {
 
-
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
         Player player = (Player) e.getPlayer();

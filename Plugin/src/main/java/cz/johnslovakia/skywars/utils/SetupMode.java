@@ -2,7 +2,7 @@ package cz.johnslovakia.skywars.utils;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import cz.johnslovakia.gameapi.WorldManagement.WorldManager;
+import cz.johnslovakia.gameapi.worldManagement.WorldManager;
 import cz.johnslovakia.gameapi.messages.MessageManager;
 import cz.johnslovakia.gameapi.users.GamePlayer;
 import cz.johnslovakia.gameapi.users.PlayerManager;
@@ -32,6 +32,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -99,6 +100,11 @@ public class SetupMode implements Listener {
                 MessageManager.get(admin, "chat.successfully.icon_set")
                         .send();
                 XSound.ENTITY_PLAYER_LEVELUP.play(admin);
+                try {
+                    giveSetupItems();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -123,7 +129,7 @@ public class SetupMode implements Listener {
         Item selector = new Item(new ItemBuilder(Material.PAPER).setName("§aMap Selector").toItemStack(),
                 0, "setup_item.map_selector", e -> openMapSelectorInventory());
         Item cancel = new Item(new ItemBuilder(Material.BARRIER).setName("§4Cancel").toItemStack(),
-                8, "setup_item.map_selector", e -> admin.getInventory().clear());
+                8, "setup_item.cancel", e -> admin.getInventory().clear());
 
         inventoryManager.registerItem(selector, cancel);
         inventoryManager.give(admin);
@@ -132,10 +138,16 @@ public class SetupMode implements Listener {
     }
 
     public void openMapSelectorInventory(){
+        if (getMaps().isEmpty()){
+            MessageManager.get(admin, "chat.error.no_map")
+                    .send();
+            return;
+        }
+
         //int inv_size = ((getMaps().size() + 9) / 9 * 9);
         GUI inventory = Component.gui()
                 .title("Map Selector")
-                .rows(getMaps().size() / 9)
+                .rows(3)
                 .prepare((gui, player) -> {
 
                     int i = 0;
@@ -170,13 +182,12 @@ public class SetupMode implements Listener {
 
     List<Block> island_chests = new ArrayList<>();
 
-    private int island = 0;
     public void giveSetupIslandItems(){
-        ConfigAPI config = DataHandler.getMainConfig();
-        ConfigAPI mConfig = DataHandler.getMapsConfig();
+        //ConfigAPI config = DataHandler.getMainConfig();
+        ConfigAPI config = DataHandler.getMapsConfig();
 
-        island = mConfig.getConfig().getInt("maps." + currentMap + ".islandChests_set") + 1;
-        island = (mConfig.getConfig().getConfigurationSection("maps." + currentMap + ".islands").getKeys(false) == null ? 1 : mConfig.getConfig().getConfigurationSection("maps." + currentMap + ".islands").getKeys(false).size());
+        //island = config.getConfig().getInt("maps." + currentMap + ".islandChests_set") + 1;
+        int island = (config.getConfig().getConfigurationSection("maps." + currentMap + ".islands") == null ? 1 : config.getConfig().getConfigurationSection("maps." + currentMap + ".islands").getKeys(false).size() + 1);
 
         if (currentInventory != null) {
             currentInventory.unloadInventory(admin);
@@ -323,14 +334,14 @@ public class SetupMode implements Listener {
             MessageManager.get(admin, "chat.successfully.spectator_spawn")
                     .send();
         });
-        Item pos1 = new Item(new ItemBuilder(XMaterial.FEATHER.parseMaterial()).toItemStack(),
+        Item pos1 = new Item(new ItemBuilder(XMaterial.STICK.parseMaterial()).toItemStack(),
                 5, "setup_item.pos1", e -> {
             mapConfig.setLocation("maps." + currentMap + ".pos1", admin.getLocation());
             mapConfig.saveConfig();
             MessageManager.get(admin, "chat.successfully.pos1")
                     .send();
         });
-        Item pos2 = new Item(new ItemBuilder(XMaterial.FEATHER.parseMaterial()).toItemStack(),
+        Item pos2 = new Item(new ItemBuilder(XMaterial.STICK.parseMaterial()).toItemStack(),
                 6, "setup_item.pos2", e -> {
             mapConfig.setLocation("maps." + currentMap + ".pos2", admin.getLocation());
             mapConfig.saveConfig();

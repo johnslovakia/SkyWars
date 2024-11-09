@@ -43,6 +43,6 @@ public class BaseballPlayer implements Kit {
     @Override
     public KitContent getContent() {
         return new KitContent(new ItemBuilder(XMaterial.STICK.parseMaterial()).addEnchant(Enchantment.KNOCKBACK, 1).toItemStack(),
-                new ItemBuilder(Material.IRON_BOOTS).addEnchant(Enchantment.PROTECTION, 2).toItemStack());
+                new ItemBuilder(Material.CHAINMAIL_BOOTS).addEnchant(Enchantment.PROTECTION, 2).toItemStack());
     }
 }

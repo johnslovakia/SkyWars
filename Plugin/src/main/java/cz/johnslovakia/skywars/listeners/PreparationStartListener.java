@@ -1,9 +1,11 @@
 package cz.johnslovakia.skywars.listeners;
 
+import cz.johnslovakia.gameapi.events.GameEndEvent;
 import cz.johnslovakia.gameapi.events.GamePreparationEvent;
 import cz.johnslovakia.gameapi.events.GameStartEvent;
 import cz.johnslovakia.gameapi.game.Game;
 import cz.johnslovakia.gameapi.task.Task;
+import cz.johnslovakia.gameapi.utils.BetterInvisibility;
 import cz.johnslovakia.skywars.SkyWars;
 import cz.johnslovakia.skywars.chest.ChestManager;
 import cz.johnslovakia.skywars.structures.MeteoriteTask;
@@ -24,6 +26,13 @@ public class PreparationStartListener implements Listener {
 
         new Task(game, "TimePlaying", 120, SkyWars.getInstance());
         new Task(game, "ChestRefill", 120, SkyWars.getInstance());
-        new Task(game, "Meteorit", 285, new MeteoriteTask(),SkyWars.getInstance());
+        new Task(game, "Meteorite", 285, new MeteoriteTask(),SkyWars.getInstance());
+
+        new BetterInvisibility(true).registerEvents();
+    }
+
+    @EventHandler
+    public void onGameEnd(GameEndEvent e) {
+        e.getGame().getPlayingMap().getWorld().getWorldBorder().reset();
     }
 }

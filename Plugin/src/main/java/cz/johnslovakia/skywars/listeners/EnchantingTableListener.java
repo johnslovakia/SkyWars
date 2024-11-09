@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 
-public class EnchantingTable implements Listener {
+public class EnchantingTableListener implements Listener {
 
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent e) {

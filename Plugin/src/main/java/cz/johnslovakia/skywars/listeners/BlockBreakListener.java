@@ -5,6 +5,7 @@ import cz.johnslovakia.gameapi.game.GameState;
 import cz.johnslovakia.gameapi.users.GamePlayer;
 import cz.johnslovakia.gameapi.users.PlayerManager;
 import cz.johnslovakia.gameapi.messages.MessageManager;
+import cz.johnslovakia.gameapi.utils.Sounds;
 import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Location;
@@ -30,66 +31,32 @@ public class BlockBreakListener implements Listener {
         if (gp.getPlayerData().getGame().getState() != GameState.INGAME){
             return;
         }
-
-        if (e.getExpToDrop() != 0) {
-            player.giveExp(e.getExpToDrop());
-        }
         e.setExpToDrop(0);
-
-        /*if (Util.isInvFull(player)) {
-            if (block.getType().equals(Material.GOLD_ORE)
-                    || block.getType().equals(Material.IRON_ORE)
-                    || block.getType().equals(Material.DIAMOND_ORE)
-                    || block.getType().equals(Material.LOG)
-                    || block.getType().equals(Material.GRAVEL)) {
-                player.sendMessage(Messages.translate(player, "chat.full_inventory"));
-                e.setCancelled(true);
-                return;
-            }
-        }*/
-
-
 
 
         if (block.getType().equals(Material.IRON_ORE)){
             e.setCancelled(true);
             block.setType(Material.AIR);
 
-            Integer amount = Util.getRandom(1, 2);
+            int amount = Util.getRandom(1, 3);
 
             player.getInventory().addItem(new ItemStack(Material.IRON_INGOT, amount));
-            //block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.IRON_INGOT));
-
-            //ItemStack item = ItemManager.getIronItem(player);
-            //player.getInventory().addItem(item);
-            //player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 20.0F, 20.0F);
-            player.giveExpLevels(1);
+            player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 1F, 1F);
+            player.giveExp(7 + (4 * amount));
         }else if (block.getType().equals(Material.DIAMOND_ORE)){
             e.setCancelled(true);
             block.setType(Material.AIR);
 
             player.getInventory().addItem(new ItemStack(Material.DIAMOND));
-            //block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.DIAMOND));
-
-            //gp.getScoreByName("DiamondOre").increaseScore();
-            //ItemStack item = ItemManager.getDiamondItem(player);
-            //player.getInventory().addItem(item);
-            //player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 20.0F, 20.0F);
-            player.giveExpLevels(1);
-
-            /*if (!GameAPI.getQuestManager().getQuest("dailyquest4").isCompleted(player)) {
-                GameAPI.getQuestManager().getQuest("dailyquest4").addProgress(player);
-            }*/
+            player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 1F, 1F);
+            player.giveExp(14);
         }else if (block.getType().equals(Material.GRAVEL)){
             e.setCancelled(true);
             block.setType(Material.AIR);
 
-            player.getInventory().addItem(new ItemStack(Material.ARROW, 2));
-            //block.getLocation().getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.ARROW, 2));
-
-            //player.getInventory().addItem(new ItemStack(Material.ARROW, 2));
-            //player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 20.0F, 20.0F);
-            player.giveExpLevels(1);
+            player.getInventory().addItem(new ItemStack(Material.ARROW));
+            player.playSound(player.getLocation(), Sounds.LEVEL_UP.bukkitSound(), 1F, 1F);
+            player.giveExp(8);
         }else if (block.getType().equals(Material.CHEST)){
             e.setCancelled(true);
             Chest chest = (Chest)e.getBlock().getState();

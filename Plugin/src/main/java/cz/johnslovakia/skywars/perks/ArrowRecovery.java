@@ -6,6 +6,7 @@ import cz.johnslovakia.gameapi.game.perk.PerkLevel;
 import cz.johnslovakia.gameapi.game.perk.PerkType;
 import cz.johnslovakia.gameapi.users.PlayerData;
 import cz.johnslovakia.gameapi.users.PlayerManager;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
@@ -48,7 +49,7 @@ public class ArrowRecovery implements Perk {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<ProjectileLaunchEvent> trigger = new Trigger<>(ProjectileLaunchEvent.class,
-                event -> PlayerManager.getGamePlayer((Player) event.getEntity().getShooter()),
+                new Mapper.SingleMapper<>(event -> PlayerManager.getGamePlayer((Player) event.getEntity().getShooter())),
                 event -> event.getEntity() instanceof Arrow && event.getEntity().getShooter() instanceof Player,
                 gamePlayer -> {
                     Player player = gamePlayer.getOnlinePlayer();

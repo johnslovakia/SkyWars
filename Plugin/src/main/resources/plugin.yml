@@ -1,6 +1,7 @@
 name: SkyWars
 version: ${project.version}
 main: cz.johnslovakia.skywars.SkyWars
+api-version: '1.21'
 prefix: SkyWars
 authors: [Hunzek_]
 depend: [MinigameAPI]

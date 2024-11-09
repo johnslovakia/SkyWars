@@ -1,22 +1,19 @@
 package cz.johnslovakia.skywars.listeners;
 
 import com.cryptomorin.xseries.XMaterial;
-import cz.johnslovakia.gameapi.GameAPI;
+
 import cz.johnslovakia.gameapi.game.GameState;
 import cz.johnslovakia.gameapi.users.GamePlayer;
 import cz.johnslovakia.gameapi.users.PlayerManager;
 import cz.johnslovakia.gameapi.utils.Sounds;
 import cz.johnslovakia.gameapi.utils.Utils;
-import cz.johnslovakia.skywars.SkyWars;
 import cz.johnslovakia.skywars.events.FireballLaunchEvent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TNTPrimed;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -55,25 +52,23 @@ public class TNTandFireballListener implements Listener {
 
     @EventHandler
     public void onTNTDamagePlayer(EntityDamageByEntityEvent e) {
-        if(e.getEntity() instanceof Player &&
-                e.getDamager() instanceof TNTPrimed) {
-            e.setCancelled(true);
+        Entity entity = e.getEntity();
+        Entity damager = e.getDamager();
 
-            Player player = (Player) e.getEntity();
-            //TNTPrimed tnt = (TNTPrimed) e.getDamager();
-            Utils.damagePlayer(player, 8);
-        }else if(e.getEntity() instanceof Player &&
-                e.getDamager() instanceof Fireball) {
-            e.setCancelled(true);
+        if (entity instanceof Player player) {
+            if (damager instanceof TNTPrimed) {
+                e.setCancelled(true);
+                Utils.damagePlayer(player, 8);
+            } else if (damager instanceof Fireball fireball) {
+                e.setCancelled(true);
 
-            Player player = (Player) e.getEntity();
-
-            if (e.getEntity().equals(((Fireball) e.getDamager()).getShooter())) {
-                Utils.damagePlayer(player, 3);
-                Vector velocity = player.getVelocity().add(new Vector(0, 0.8, 0));
-                player.setVelocity(velocity);
-            }else{
-                Utils.damagePlayer(player, 5);
+                if (entity.equals(fireball.getShooter())) {
+                    Utils.damagePlayer(player, 3);
+                    Vector velocity = player.getVelocity().add(new Vector(0, 0.8, 0));
+                    player.setVelocity(velocity);
+                } else {
+                    Utils.damagePlayer(player, 5);
+                }
             }
         }
     }
@@ -98,6 +93,10 @@ public class TNTandFireballListener implements Listener {
         GamePlayer gp = PlayerManager.getGamePlayer(player);
         ItemStack eItem = e.getItem();
 
+        if (gp.getPlayerData().getGame() == null){
+            return;
+        }
+
         if (gp.getPlayerData().getGame().getState() != GameState.INGAME) {
             return;
         }
@@ -118,15 +117,11 @@ public class TNTandFireballListener implements Listener {
                 Bukkit.getPluginManager().callEvent(ev);
 
 
-                int i = eItem.getAmount();
-                if (i > 1) {
-                    eItem.setAmount(i - 1);
-                    e.setCancelled(true);
-                    return;
+                if (eItem.getAmount() > 1) {
+                    eItem.setAmount(eItem.getAmount() - 1);
+                } else {
+                    player.getInventory().remove(eItem);
                 }
-
-                player.getInventory().setItemInMainHand(null);
-                e.setCancelled(true);
             }
         }
     }

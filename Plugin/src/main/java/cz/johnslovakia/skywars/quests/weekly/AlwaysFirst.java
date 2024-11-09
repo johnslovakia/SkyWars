@@ -5,6 +5,7 @@ import cz.johnslovakia.gameapi.events.GamePlayerDeathEvent;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import org.bukkit.event.Listener;
 
@@ -37,7 +38,7 @@ public class AlwaysFirst implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GamePlayerDeathEvent> trigger = new Trigger<>(GamePlayerDeathEvent.class,
-                GamePlayerDeathEvent::getKiller,
+                new Mapper.SingleMapper<>(GamePlayerDeathEvent::getKiller),
                 event -> event.getKiller() != null && event.isFirstGameKill() && event.getKiller().getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

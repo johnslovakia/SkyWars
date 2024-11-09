@@ -38,6 +38,6 @@ public class Archer implements Kit {
     public KitContent getContent() {
         return new KitContent(new ItemBuilder(Material.BOW).addEnchant(Enchantment.POWER, 1).addEnchant(Enchantment.FLAME, 1).damageItem(12).toItemStack(),
                 new ItemStack(Material.ARROW, 7),
-                new ItemBuilder(XMaterial.GOLDEN_LEGGINGS.parseMaterial()).addEnchant(Enchantment.PROTECTION, 2).toItemStack());
+                new ItemBuilder(XMaterial.GOLDEN_LEGGINGS.parseMaterial()).addEnchant(Enchantment.PROTECTION, 1).toItemStack());
     }
 }

@@ -6,6 +6,7 @@ import cz.johnslovakia.gameapi.events.GamePlayerDeathEvent;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -28,7 +29,7 @@ public class VoidKill implements Quest, Listener {
 
     @Override
     public String getDisplayName() {
-        return "\"Have a nice day in the world!\"";
+        return "\"Have a nice day in the void!\"";
     }
 
     @Override
@@ -45,7 +46,7 @@ public class VoidKill implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GamePlayerDeathEvent> trigger = new Trigger<>(GamePlayerDeathEvent.class,
-                GamePlayerDeathEvent::getKiller,
+                new Mapper.SingleMapper<>(GamePlayerDeathEvent::getKiller),
                 event -> event.getKiller() != null && event.getDmgCause().equals(EntityDamageEvent.DamageCause.VOID) && event.getKiller().getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

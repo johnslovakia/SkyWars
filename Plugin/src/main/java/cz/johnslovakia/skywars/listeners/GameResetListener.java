@@ -7,7 +7,6 @@ import org.bukkit.event.Listener;
 
 public class GameResetListener implements Listener {
 
-
     @EventHandler
     public void onGameReset(GameResetEvent e) {
         new ChestManager(e.getNewGame());

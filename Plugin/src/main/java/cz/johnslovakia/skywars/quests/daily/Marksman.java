@@ -11,6 +11,7 @@ import cz.johnslovakia.gameapi.users.PlayerManager;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
@@ -52,7 +53,7 @@ public class Marksman implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GamePlayerDeathEvent> trigger = new Trigger<>(GamePlayerDeathEvent.class,
-                GamePlayerDeathEvent::getKiller,
+                new Mapper.SingleMapper<>(GamePlayerDeathEvent::getKiller),
                 event -> event.getKiller() != null && event.getDmgCause().equals(EntityDamageEvent.DamageCause.PROJECTILE) && event.getKiller().getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

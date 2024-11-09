@@ -11,6 +11,7 @@ import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -18,7 +19,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.List;
 import java.util.Set;
 
-public class ResistanceBoost implements Perk {
+public class ResistanceBoost implements Perk, Listener {
 
     @Override
     public String getName() {

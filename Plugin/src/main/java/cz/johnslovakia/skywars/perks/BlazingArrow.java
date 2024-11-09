@@ -16,13 +16,14 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Set;
 
-public class BlazingArrow implements Perk {
+public class BlazingArrow implements Perk, Listener {
 
     @Override
     public String getName() {
@@ -31,7 +32,7 @@ public class BlazingArrow implements Perk {
 
     @Override
     public ItemStack getIcon() {
-        return new ItemStack(Material.ARROW);
+        return new ItemStack(Material.FLINT_AND_STEEL);
     }
 
     @Override

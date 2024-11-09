@@ -37,8 +37,8 @@ public class Knight implements Kit {
 
     @Override
     public KitContent getContent() {
-        return new KitContent(new ItemBuilder(Material.IRON_SWORD).addEnchant(Enchantment.SHARPNESS, 1).toItemStack(),
+        return new KitContent(new ItemBuilder(Material.STONE_SWORD).addEnchant(Enchantment.SHARPNESS, 1).toItemStack(),
                 XMaterial.GOLDEN_APPLE.parseItem(),
-                XMaterial.IRON_CHESTPLATE.parseItem());
+                XMaterial.CHAINMAIL_CHESTPLATE.parseItem());
     }
 }

@@ -11,6 +11,7 @@ import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class VoidScavenger implements Perk {
+public class VoidScavenger implements Perk, Listener {
 
     @Override
     public String getName() {
@@ -27,7 +28,7 @@ public class VoidScavenger implements Perk {
 
     @Override
     public ItemStack getIcon() {
-        return new ItemStack(Material.ARROW);
+        return new ItemStack(Material.BLACK_DYE);
     }
 
     @Override
@@ -54,7 +55,7 @@ public class VoidScavenger implements Perk {
     @EventHandler
     public void onkillerDeath(GamePlayerDeathEvent e) {
         GamePlayer killer = e.getKiller();
-        GamePlayer dead = e.getPlayer();
+        GamePlayer dead = e.getGamePlayer();
 
         if (e.getKiller() != null && e.getKiller() != dead){
             if (!e.getDmgCause().equals(EntityDamageEvent.DamageCause.VOID)){

@@ -7,6 +7,7 @@ import cz.johnslovakia.gameapi.game.perk.PerkLevel;
 import cz.johnslovakia.gameapi.game.perk.PerkType;
 import cz.johnslovakia.gameapi.users.PlayerData;
 import cz.johnslovakia.gameapi.utils.ItemBuilder;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
@@ -49,7 +50,7 @@ public class LuckyCharm implements Perk {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GamePlayerDeathEvent> trigger = new Trigger<>(GamePlayerDeathEvent.class,
-                GamePlayerDeathEvent::getKiller,
+                new Mapper.SingleMapper<>(GamePlayerDeathEvent::getKiller),
                 event -> event.getKiller() != null,
                 gamePlayer -> {
                     Player player = gamePlayer.getOnlinePlayer();

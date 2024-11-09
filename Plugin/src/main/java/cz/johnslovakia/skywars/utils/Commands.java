@@ -1,7 +1,7 @@
 package cz.johnslovakia.skywars.utils;
 
 import cz.johnslovakia.gameapi.GameAPI;
-import cz.johnslovakia.gameapi.WorldManagement.WorldManager;
+import cz.johnslovakia.gameapi.worldManagement.WorldManager;
 import cz.johnslovakia.gameapi.game.GameManager;
 import cz.johnslovakia.gameapi.game.GameState;
 import cz.johnslovakia.gameapi.game.Game;
@@ -11,6 +11,7 @@ import cz.johnslovakia.gameapi.task.Task;
 import cz.johnslovakia.gameapi.task.tasks.StartCountdownCommand;
 import cz.johnslovakia.gameapi.utils.ConfigAPI;
 import cz.johnslovakia.skywars.SkyWars;
+import cz.johnslovakia.skywars.items.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,13 +20,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.IOException;
 
 public class Commands implements CommandExecutor {
 
     private void sendHelpMessage(Player player){
         player.sendMessage("");
-        player.sendMessage("§7Game: §aSkyWars");
+        player.sendMessage("§fGame: §aSkyWars §7(v" + SkyWars.getInstance().getDescription().getVersion() + ")");
         player.sendMessage("");
         player.sendMessage("§a/skywars create map <Name> [Authors ...]");
         player.sendMessage("§a/skywars setup");
@@ -41,6 +46,7 @@ public class Commands implements CommandExecutor {
         player.sendMessage("");
     }
 
+    //BORDER
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
@@ -58,10 +64,27 @@ public class Commands implements CommandExecutor {
                         case "time":
                             PlayerManager.getGamePlayer(player).getPlayerData().getGame().getRunningMainTask().setCounter(Integer.valueOf(args[1]));
                             break;
+                        case "meteorite":
+                            Task.getTask(gp.getPlayerData().getGame(), "Meteorite").setCounter(20);
+                            break;
+                        case "items":
+                            Inventory inv = Bukkit.createInventory(null, 9);
+                            inv.addItem(GhostPearl.getGhostPearlItem().getFinalItemStack(gp));
+                            inv.addItem(NetherShield.getNetherShieldItem().getFinalItemStack(gp));
+                            inv.addItem(RunItem.getRunItem().getFinalItemStack(gp));
+                            inv.addItem(HealingSoup.getHealingSoupItem().getFinalItemStack(gp));
+                            inv.addItem(SparkOfLevitationItem.getSparkOfLevitationItem().getFinalItemStack(gp));
+                            inv.addItem(SparkOfInvisibilityItem.getSparkOfInvisibilityItem().getFinalItemStack(gp));
+                            inv.addItem(ToxicGrenadeItem.getToxicGrenadeItem().getFinalItemStack(gp));
+                            player.openInventory(inv);
+                            break;
                         case "games":
                             for (Game game : GameManager.getGames()) {
                                 player.sendMessage("§a" + game.getName() + " §8(ID: " + game.getID() + ") §7- §fState: §a" + game.getState().toString() + " §7, §fPlayers: §a(" + game.getPlayers().size() + "/" + game.getSettings().getMaxPlayers() + ")");
                             }
+                            break;
+                        case "win":
+                            gp.getPlayerData().getGame().endGame(gp);
                             break;
                         case "join":
                             if (args.length == 2) {
@@ -232,7 +255,7 @@ public class Commands implements CommandExecutor {
                             break;
 
                         case "setup":
-                            SetupMode setup = new SetupMode(player);
+                            new SetupMode(player);
                             break;
                         case "reload":
                             GameAPI.getInstance().saveConfig();

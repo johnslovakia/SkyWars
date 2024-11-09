@@ -6,7 +6,7 @@
 
     <groupId>cz.johnslovakia</groupId>
     <artifactId>SkyWars</artifactId>
-    <version>1.0</version>
+    <version>2.0</version>
     <packaging>pom</packaging>
 
     <name>SkyWars</name>

@@ -6,6 +6,7 @@ import cz.johnslovakia.gameapi.game.perk.Perk;
 import cz.johnslovakia.gameapi.game.perk.PerkLevel;
 import cz.johnslovakia.gameapi.game.perk.PerkType;
 import cz.johnslovakia.gameapi.users.PlayerData;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
@@ -45,7 +46,7 @@ public class Ender implements Perk {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GamePlayerDeathEvent> trigger = new Trigger<>(GamePlayerDeathEvent.class,
-                GamePlayerDeathEvent::getKiller,
+                new Mapper.SingleMapper<>(GamePlayerDeathEvent::getKiller),
                 event -> event.getKiller() != null,
                 gamePlayer -> {
                     Player player = gamePlayer.getOnlinePlayer();

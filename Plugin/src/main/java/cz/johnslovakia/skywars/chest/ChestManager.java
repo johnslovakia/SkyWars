@@ -4,12 +4,18 @@ import com.cryptomorin.xseries.XMaterial;
 import cz.johnslovakia.gameapi.game.Game;
 
 import cz.johnslovakia.gameapi.game.map.GameMap;
+import cz.johnslovakia.gameapi.game.map.MapLocation;
 import cz.johnslovakia.gameapi.utils.ConfigAPI;
 import cz.johnslovakia.gameapi.utils.ItemBuilder;
+import cz.johnslovakia.gameapi.utils.Logger;
+import cz.johnslovakia.gameapi.utils.StringUtils;
 import cz.johnslovakia.skywars.SkyWars;
+import cz.johnslovakia.skywars.items.HealingSoup;
+import cz.johnslovakia.skywars.items.RunItem;
 import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,6 +27,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.block.Chest;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.Comparator.comparingInt;
@@ -30,6 +37,7 @@ import java.util.stream.Collectors;
 
 
 //TODO: rewrite
+@Getter
 public class ChestManager {
 
     private static List<ChestManager> chestManagers = new ArrayList<>();
@@ -39,7 +47,9 @@ public class ChestManager {
     private Set<Chest> rareChests = new HashSet<>();
     private Set<Chest> opened = new HashSet<>();
 
+    @Getter
     private List<ChestItem> normalItems = new ArrayList<>();
+    @Getter
     private List<ChestItem> rareItems = new ArrayList<>();
 
 
@@ -53,34 +63,31 @@ public class ChestManager {
     public void loadChests(GameMap map){
         ConfigAPI mConfig = DataHandler.getMapsConfig();
 
-        if (mConfig.getConfig().getConfigurationSection("maps." + map.getName() + ".islandChests") != null) {
-            for (String island : mConfig.getConfig().getConfigurationSection("maps." + map.getName() + ".islandChests").getKeys(false)) {
-                for (String key : mConfig.getConfig().getConfigurationSection("maps." + map.getName() + ".islandChests." + island).getKeys(false)) {
-                    if (mConfig.getConfig().getString("maps." + map.getName() + ".islandChests." + island + "." + key + ".type") != null) {
-                        if (mConfig.getLocation("maps." + map.getName() + ".islandChests." + island + "."  + key + ".location") != null) {
-                            if (mConfig.getConfig().getString("maps." + map.getName() + ".islandChests." + island + "." + key + ".type").toLowerCase().equals("normal")) {
+        if (mConfig.getConfig().getConfigurationSection("maps." + map.getName() + ".islands") != null) {
+            for (String island : mConfig.getConfig().getConfigurationSection("maps." + map.getName() + ".islands").getKeys(false)) {
+                if (mConfig.getConfig().get("maps." + map.getName() + ".islands." + island + ".chest1") == null
+                        || mConfig.getConfig().get("maps." + map.getName() + ".islands." + island + ".chest2") == null
+                        || mConfig.getConfig().get("maps." + map.getName() + ".islands." + island + ".chest3") == null){
+                    Logger.log("Island " + island +" has improperly set chests!", Logger.LogType.ERROR);
+                }
+                List<MapLocation> chests = Arrays.asList(mConfig.getMapLocation(island + ".chest1", "maps." + map.getName() + ".islands." + island + ".chest1"),
+                        mConfig.getMapLocation(island + ".chest1", "maps." + map.getName() + ".islands." + island + ".chest2"),
+                        mConfig.getMapLocation(island + ".chest1", "maps." + map.getName() + ".islands." + island + ".chest3"));
 
-                                Location location = mConfig.getLocation("maps." + map.getName() + ".islandChests." + island + "." + key + ".location");
-                                //BlockFace blockFace =  BlockFace.valueOf(mConfig.getConfig().getString("maps." + map.getID() + ".islandChests." + island + "." + key + ".blockFace"));
-                                //SkyWars.getInstance().getVersionSupport().setChestFacingDirection(blockFace, location);
-                                location.setWorld(map.getWorld());
+                for (MapLocation location : chests) {
+                    Block block = location.getLocationForMap(map).getBlock();
 
-                                Block block = location.getBlock();
+                    BlockState state = block.getState();
+                    if (state instanceof Chest) {
+                        Chest chest = (Chest) block.getState();
 
-                                BlockState state = block.getState();
-                                if (state instanceof Chest) {
-                                    Chest chest = (Chest) location.getBlock().getState();
-
-                                    if (islandChests.get(island) == null){
-                                        islandChests.put(island, List.of(chest));
-                                    }else{
-                                        if (!islandChests.get(island).contains(chest)) {
-                                            List<Chest> list = new ArrayList<>(islandChests.get(island));
-                                            list.add(chest);
-                                            islandChests.put(island, list);
-                                        }
-                                    }
-                                }
+                        if (islandChests.get(island) == null) {
+                            islandChests.put(island, List.of(chest));
+                        } else {
+                            if (!islandChests.get(island).contains(chest)) {
+                                List<Chest> list = new ArrayList<>(islandChests.get(island));
+                                list.add(chest);
+                                islandChests.put(island, list);
                             }
                         }
                     }
@@ -94,12 +101,9 @@ public class ChestManager {
                 if (mConfig.getConfig().getString("maps." + map.getName() + ".rareChests." + key + ".type") != null) {
                     if (mConfig.getLocation("maps." + map.getName() + ".rareChests." + key + ".location") != null) {
                         if (mConfig.getConfig().getString("maps." + map.getName() + ".rareChests." + key + ".type").equalsIgnoreCase("rare")) {
-                            Location location = mConfig.getLocation("maps." + map.getName() + ".rareChests." + key + ".location");
-                            //BlockFace blockFace =  BlockFace.valueOf(mConfig.getConfig().getString("maps." + map.getID() + ".rareChests." + key + ".blockFace"));
-                            //SkyWars.getInstance().getVersionSupport().setChestFacingDirection(blockFace, location);
-                            location.setWorld(map.getWorld());
+                            MapLocation location = mConfig.getMapLocation(key, "maps." + map.getName() + ".rareChests." + key + ".location");
 
-                            Block block = location.getBlock();
+                            Block block = location.getLocationForMap(map).getBlock();
                             BlockState state = block.getState();
                             if (state instanceof Chest) {
                                 Chest chest = (Chest) block.getState();
@@ -112,49 +116,11 @@ public class ChestManager {
         }
     }
 
-    //private static Map<String, List<ChestItem>> chest_items = new HashMap<>();
-    private List<ChestItem> mustBeInserted = new ArrayList<>();
-
     private Chest getChest(Map<Chest, List<ChestItem>> chestsItems){
-        //int maxIslandChest = 3;
-        //int maxItemsInChests = 13;
-        //int maxItemsInChest = 5;
 
         if (chestsItems.isEmpty()){
             return null;
         }
-
-        /*for (Chest chest : chests){
-            List<ItemStack> l = new ArrayList();
-            chestsItems.put(chest, l);
-            for(ItemStack item : chest.getBlockInventory().getContents()){
-                if (item == null || item.getType() == Material.AIR){
-                    continue;
-                }
-                if (chestsItems.get(chest) == null){
-                    chestsItems.put(chest, Arrays.asList(item));
-                }else{
-                    List<ItemStack> list = new ArrayList<>(chestsItems.get(chest));
-                    list.add(item);
-                    chestsItems.put(chest, list);
-                }
-            }
-        }*/
-
-        //chestsItems.keySet().removeIf(e -> (!chestsItems.isEmpty() ? (chestsItems.get(e) != null ? chestsItems.get(e).size() : 0) : 0) > maxItemsInChest);
-
-        /*List<Chest> chest = new ArrayList<>();
-        if (chestsItems.size() != 0) {
-            chestsItems.entrySet()
-                    .stream()
-                    .sorted((o1, o2) -> -Integer.compare(o1.getValue().size(), o2.getValue().size()))
-                    .limit(1)
-                    .collect(Collectors.toList())
-                    .forEach(e -> {
-                        chest.add(e.getKey());
-                    });
-        }*/
-
         List<Chest> chest = new ArrayList<>();
         if (!chestsItems.isEmpty()) {
             chestsItems.entrySet()
@@ -165,10 +131,6 @@ public class ChestManager {
                         chest.add(e.getKey());
                     });
         }
-
-        /*Map<Chest, List<ItemStack>> sorted = sortMap(chestsItems);
-        System.out.println(sorted);*/
-
         return chest.get(0);
     }
 
@@ -177,72 +139,6 @@ public class ChestManager {
                 .sorted((e1, e2) -> Integer.compare(e2.getValue().size(), e1.getValue().size()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
-
-    /*private static String getRandomChest(Map<String, List<ChestItem>> chests_items){
-        ConfigAPI config = DataHandler.getMainConfig();
-        int maxIslandChest = 3;
-        int maxItemsInChest = 5;
-
-        Map<String, Integer> map = new HashMap<>();
-        if (chests_items.size() != 0){
-            for (String chest : chests_items.keySet()){
-                map.put(chest, chests_items.get(chest).size());
-            }
-        }
-
-        //AtomicReference<Integer> ch = new AtomicReference<>(new Random().nextInt((maxIslandChest) + 1));
-        Integer ch = new Random().nextInt((maxIslandChest) + 1);
-
-        if (map.size() != 0) {
-
-            map.entrySet()
-                        .stream()
-                        .sorted((o1, o2) -> -Integer.compare(o1.getValue(), o2.getValue()))
-                        .limit(1)
-                        .collect(Collectors.toList())
-                        .forEach(e -> {
-                            ch.set(Integer.parseInt(e.getKey().replace("chest-", "")));
-                        });
-        }
-
-
-        if (chests_items.size() == 0 || chests_items.get(String.valueOf(ch)) == null ){
-            return "chest-" + String.valueOf(ch);
-        }
-
-        if (chests_items.get(String.valueOf(ch)).size() < maxItemsInChest){
-            return "chest-" + String.valueOf(ch);
-        }else{
-            if (ch == 3){
-                if (chests_items.get(String.valueOf(ch - 1)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch - 1);
-                }else if (chests_items.get(String.valueOf(ch - 2)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch - 2);
-                }else{
-                    return "chest-" + "1";
-                }
-            }else if (ch == 2){
-                if (chests_items.get(String.valueOf(ch - 1)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch - 1);
-                }else if (chests_items.get(String.valueOf(ch + 1)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch + 1);
-                }else{
-                    return "chest-" + "2";
-                }
-            }else if (ch == 1){
-                if (chests_items.get(String.valueOf(ch + 1)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch + 1);
-                }else if (chests_items.get(String.valueOf(ch+ 2)).size() < maxItemsInChest){
-                    return "chest-" + String.valueOf(ch + 2);
-                }else{
-                    return "chest-" + "3";
-                }
-            }
-        }
-        return "chest-" + "1";
-    }*/
-
-
 
     public void fillChests() {
         for (String island : getIslandChests().keySet()) {
@@ -266,10 +162,22 @@ public class ChestManager {
                     mustBeInserted.add(item);
                 }
             }
-            Collections.shuffle(armorItems);
-            mustBeInserted.add(armorItems.get(0));
-            mustBeInserted.add(armorItems.get(1));
-            mustBeInserted.add(armorItems.get(2));
+
+            List<ChestItem> armorItemsClone = new ArrayList<>(armorItems);
+
+            for (int i = 0; i <= 2; i++){
+                Collections.shuffle(armorItemsClone);
+
+                if (armorItemsClone.get(0) == null){
+                    break;
+                }
+
+                ChestItem chestItem = armorItemsClone.get(0);
+                String armorType = chestItem.getItem().getType().toString().split("_")[1].toLowerCase();
+                mustBeInserted.add(chestItem);
+                armorItemsClone.removeIf(item -> item.getItem().getType().toString().toLowerCase().contains(armorType));
+            }
+
 
             Collections.shuffle(armsItems);
             mustBeInserted.add(armsItems.get(0));
@@ -358,27 +266,18 @@ public class ChestManager {
                 if (chests_items.get(chest) != null) {
                     if (!chests_items.get(chest).isEmpty()) {
                         for (ChestItem item : chests_items.get(chest)) {
-                            //int chestSlot = Util.getRandom(0, 26);
                             int chestSlot = slots.get(0);
-                /*if (chest.getBlockInventory().getItem(chestSlot) != null){
-                    chestSlot = Util.getRandom(0, 26);
-                }*/
 
                             if (item != null) {
-                                //if (!items.contains(item)) {
-                                //items.add(item);
                                 item.setItem(chest.getBlockInventory(), chestSlot);
                                 slots.remove(0);
                                 Collections.shuffle(slots);
-                                //}
                             }
                         }
                     }
                 }
             }
         }
-
-
 
 
 
@@ -474,96 +373,70 @@ public class ChestManager {
         potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.REGENERATION, 20*20 , 0), true);
         potionStack.setItemMeta(potionMeta);
 
-        ItemBuilder infernoStaff = new ItemBuilder(Material.BLAZE_ROD);
-        infernoStaff.hideAllFlags();
-        infernoStaff.addEnchant(Enchantment.THORNS, 1);
-        infernoStaff.setName("§6Inferno Staff");
-        infernoStaff.removeLore();
-        infernoStaff.addLoreLine("§7Click to send out a pulse of fire,");
-        infernoStaff.addLoreLine("§7setting alight to nearby players.");
-
-        ItemBuilder run = new ItemBuilder(Material.SUGAR);
-        run.hideAllFlags();
-        run.addEnchant(Enchantment.THORNS, 1);
-        run.setName("§aRun!");
-        run.removeLore();
-        run.addLoreLine("§7Click to gain Speed I for 5 seconds!");
-
-        ItemBuilder soup = new ItemBuilder(XMaterial.MUSHROOM_STEW.parseMaterial());
-        soup.hideAllFlags();
-        soup.addEnchant(Enchantment.THORNS, 1);
-        soup.setName("§bHealing soup");
-        soup.removeLore();
-        soup.addLoreLine("§7Click to get regeneration!");
+        ItemStack poisonArrow = new ItemStack(Material.TIPPED_ARROW);
+        PotionMeta poisonArrowMeta = (PotionMeta) poisonArrow.getItemMeta();
+        poisonArrowMeta.setBasePotionType(PotionType.POISON);
+        poisonArrow.setItemMeta(poisonArrowMeta);
 
         ItemStack book = new ItemBuilder(Material.ENCHANTED_BOOK, 1).setName("Enchanted Book").toItemStack();
         EnchantmentStorageMeta meta = (EnchantmentStorageMeta) book.getItemMeta();
         meta.addStoredEnchant(Enchantment.SHARPNESS, 1, true);
         book.setItemMeta(meta);
 
-        armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.IRON_CHESTPLATE).toItemStack()));
+        armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.CHAINMAIL_CHESTPLATE).toItemStack()));
+        armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(XMaterial.IRON_LEGGINGS.parseMaterial()).toItemStack()));
+        armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(XMaterial.IRON_BOOTS.parseMaterial()).toItemStack()));
         armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(XMaterial.CHAINMAIL_LEGGINGS.parseMaterial()).toItemStack()));
         armorItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(XMaterial.CHAINMAIL_BOOTS.parseMaterial()).toItemStack()));
 
         armsItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.STONE_SWORD).addEnchant(Enchantment.SHARPNESS, 1).toItemStack()));
         armsItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.IRON_SWORD).toItemStack()));
-        armsItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.STONE_AXE).addEnchant(Enchantment.SHARPNESS, 1).toItemStack()));
+        armsItems.add(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.STONE_AXE).toItemStack()));
 
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.OAK_PLANKS.parseItem()), true).setItemRandomAmount(20, 32));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(Material.STONE_PICKAXE).addEnchant(Enchantment.EFFICIENCY, 3).toItemStack(), 95).setLimitInIsland(1));
         addChestItem(new ChestItem(this, ChestType.NORMAL, book, 10).setLimitInIsland(1));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, soup.toItemStack(), 8).setLimitInIsland(2));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, infernoStaff.toItemStack(), 15).setLimitInIsland(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, HealingSoup.getHealingSoupItem().getFinalItemStack(), 8).setLimitInIsland(2));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, RunItem.getRunItem().getFinalItemStack(), 6).setLimitInIsland(1));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.ARROW), 10).setItemRandomAmount(2, 5));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.SNOWBALL.parseItem()), 15).setItemRandomAmount(4, 7));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.IRON_SHOVEL.parseMaterial()), 12).setLimitInIsland(1));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.GOLDEN_APPLE), 8));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.GOLDEN_APPLE), 5));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.FIRE_CHARGE.parseMaterial()), 8).setItemRandomAmount(1, 2).setLimitInIsland(2));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.DIAMOND, 2), 10).setLimitInIsland(1));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.EXPERIENCE_BOTTLE.parseMaterial()), 12).setItemRandomAmount(8,16));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.LAVA_BUCKET), 5));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.LADDER, 16), 8));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.DIAMOND, 2), 8).setLimitInIsland(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.EXPERIENCE_BOTTLE.parseMaterial()), 10).setItemRandomAmount(8,16));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.LAVA_BUCKET), 6));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.LADDER, 12), 8));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(XMaterial.ENCHANTING_TABLE.parseMaterial()), 10).setLimitInIsland(1));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.WATER_BUCKET), 25).setLimitInIsland(1));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.BOW), 12).setLimitInIsland(1));
-        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.FISHING_ROD), 15).setLimitInIsland(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.BOW), 14).setLimitInIsland(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.FISHING_ROD), 10).setLimitInIsland(1));
         addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.TNT), 8).setItemRandomAmount(1, 2).setLimitInIsland(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemStack(Material.COBWEB), 5).setItemRandomAmount(1, 2).setLimitInIsland(1));
 
-
-        addChestItem(new ChestItem(this, ChestType.RARE, soup.toItemStack(), 10).setLimit(4));
-        addChestItem(new ChestItem(this, ChestType.RARE, run.toItemStack(), 15).setLimit(5));
+        addChestItem(new ChestItem(this, ChestType.RARE, HealingSoup.getHealingSoupItem().getFinalItemStack(), 10).setLimit(4));
+        addChestItem(new ChestItem(this, ChestType.RARE, RunItem.getRunItem().getFinalItemStack(), 15).setLimit(5));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_PICKAXE).addEnchant(Enchantment.EFFICIENCY, 2).toItemStack(), 8).setLimitInChest(1));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.IRON_AXE).addEnchant(Enchantment.SHARPNESS, 1).toItemStack(), 14).setLimitInChest(1));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_SWORD).addEnchant(Enchantment.FIRE_ASPECT, 1).toItemStack(), 15).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.IRON_AXE).toItemStack(), 10).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_SWORD).addEnchant(Enchantment.FIRE_ASPECT, 1).toItemStack(), 12).setLimitInChest(1));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.BOW).addEnchant(Enchantment.POWER, 2).toItemStack(), 8).setLimitInChest(1));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(XMaterial.OAK_PLANKS.parseMaterial()), 16).setItemRandomAmount(20, 27));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.ARROW), 12).setItemRandomAmount(4, 7));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(XMaterial.SNOWBALL.parseMaterial()), 12).setItemRandomAmount(6, 9));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(XMaterial.SNOWBALL.parseMaterial()), 14).setItemRandomAmount(6, 9));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(XMaterial.FIRE_CHARGE.parseMaterial()), 10).setItemRandomAmount(1, 2));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(XMaterial.EXPERIENCE_BOTTLE.parseMaterial()), 7).setItemRandomAmount(8, 16));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_CHESTPLATE).toItemStack(), 14).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.IRON_CHESTPLATE).addEnchant(Enchantment.PROTECTION, 2).toItemStack(), 14).setLimitInChest(1));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_BOOTS).toItemStack(), 16).setLimitInChest(1));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemBuilder(Material.DIAMOND_LEGGINGS).toItemStack(), 12).setLimitInChest(1));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.ENDER_PEARL), 15).setLimit(15).setItemRandomAmount(1, 2));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.FISHING_ROD), 10).setLimit(4).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.ENDER_PEARL), 12).setLimit(15).setItemRandomAmount(1, 2));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.GOLDEN_APPLE), 15).setItemRandomAmount(1, 2));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.TNT), 8).setItemRandomAmount(1, 2));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.LAVA_BUCKET), 8).setLimitInChest(1));
-        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.WATER_BUCKET), 10));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.TNT), 10).setItemRandomAmount(1, 2));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.COBWEB), 6).setItemRandomAmount(1, 2));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.LAVA_BUCKET), 4).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.WATER_BUCKET), 8));
         addChestItem(new ChestItem(this, ChestType.RARE, new ItemStack(Material.ANVIL), 5).setLimitInChest(1));
+        addChestItem(new ChestItem(this, ChestType.NORMAL, new ItemBuilder(poisonArrow, 2).toItemStack(), 4));
     }
 
-    public Map<String, List<Chest>> getIslandChests() {
-        return islandChests;
-    }
-
-    public Set<Chest> getRareChests() {
-        return rareChests;
-    }
-
-    public Set<Chest> getOpened() {
-        return opened;
-    }
 
     public void refill(){
         //holograms.forEach(h -> h.delete());
@@ -582,9 +455,7 @@ public class ChestManager {
 
         cleanChests();
         fillChests();
-        for (Chest chest : hologramSpawned.keySet()){
-            hologramSpawned.put(chest, false);
-        }
+        hologramSpawned.replaceAll((c, v) -> false);
         refilled++;
     }
 
@@ -704,8 +575,8 @@ public class ChestManager {
         //Zkontrolovat jestli to tu patří...
         //Util.chestLookOpen(chest.getLocation(), true);
 
-        if (items.size() == 0) {
-            if (hologramSpawned.size() == 0
+        if (items.isEmpty()) {
+            if (hologramSpawned.isEmpty()
                     || hologramSpawned.get(chest) == null
                     || !hologramSpawned.get(chest)) {
                 spawnHolograms(chest);
@@ -718,14 +589,6 @@ public class ChestManager {
             return;
         }
         getOpened().remove(chest);
-    }
-
-    public List<ChestItem> getNormalItems() {
-        return normalItems;
-    }
-
-    public List<ChestItem> getRareItems() {
-        return rareItems;
     }
 
     public void addChestItem(ChestItem chestItem){
@@ -756,18 +619,9 @@ public class ChestManager {
         return integer;
     }
 
-    public Game getGame() {
-        return game;
-    }
 
 
 
-
-
-
-    public static List<ChestManager> getChestManagers() {
-        return chestManagers;
-    }
 
     public static ChestManager getChestManager(Game game){
         for (ChestManager chestManager : chestManagers){

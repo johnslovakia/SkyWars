@@ -1,6 +1,7 @@
-minigame.description:
+minigame.description: "§7There is only one goal in this game:/newline/§7kill all the enemy players and be the last one standing!"
 
 
+# ITEMS
 Item.team_selector: "§aTeam Selector"
 Item.kit_selector: "§aKit Selector"
 Item.perks: "§aPerks"
@@ -10,48 +11,42 @@ Item.game_cosmetics: "§aGame Cosmetics"
 Item.stats: "§aStatistics"
 Item.introduction: "§aMinigame Introduction"
 
+special_item.toxic_grenade.lore: "§7Poisons players within 3 blocks/newline/§7for 3 seconds./newline//newline/§a► Right-Click to use"
+special_item.spark_of_levitation.lore: "§7Levitate up to 13 blocks/newline//newline/§a► Right-Click to use"
+special_item.spark_of_invisibility.lore: "§7Become invisible for/newline/§72,5 seconds/newline//newline/§a► Right-Click to use"
+special_item.vampire_dagger.lore: "§7Click to gain Speed I for 5 seconds!/newline//newline/§a► Right-Click to use"
+special_item.run.lore: "§7Click to gain Speed I for 5 seconds!/newline//newline/§a► Right-Click to use"
+special_item.healing_soup.lore: "§7Click to get regeneration!/newline//newline/§a► Right-Click to use"
+special_item.nether_shield.lore: "§7When used, unleashes a fire wave/newline/§7that §6ignites §7nearby enemies./newline//newline/§fCooldown: §a10 seconds/newline//newline/§a► Right-Click to use"
+special_item.ghost_pearl.lore: "§7Teleport and gain invisibility for 5 seconds./newline/§7Ideal for surprise attacks./newline//newline/§cHit reduces effect to 1,5 seconds./newline//newline/§a► Right-Click to use"
+
 
 # PERKS
 perk.absorption: "§fWhen you kill enemy,/newline/§fyou receive Absorption/newline/§ffor §a%improvement_integer% §fseconds."
-perk.arrowrecovery: "§a%improvement_integer%% §fchance of getting/newline/§fback your arrow on bow hit."
-perk.blazingarrow: "§a%improvement_integer%% §fchance to shooting a/newline/§ffire arrow with your bow."
+perk.arrow_recovery: "§a%improvement_integer%% §fchance of getting/newline/§fback your arrow on bow hit."
+perk.blazing_arrow: "§a%improvement_integer%% §fchance to shooting a/newline/§ffire arrow with your bow."
 perk.digger: "§fWhen game starts,/newline/§fyou receive Haste II/newline/§ffor §a%improvement_integer% §fseconds."
 perk.ender: "§a%improvement_integer%% §fchance of receive/newline/§fEnderpearl, when you kill enemy."
-perk.luckycharm: "§a%improvement_integer%% §fchance to give/newline/§fa golden apple,/newline/§fwhen you kill enemy."
+perk.lucky_charm: "§a%improvement_integer%% §fchance to give/newline/§fa golden apple,/newline/§fwhen you kill enemy."
 perk.rambo: "§fWhen you kill enemy,/newline/§fyou receive Strenght I/newline/§ffor §a%improvement_integer% §fseconds."
 perk.resistanceboost: "§fWhen game starts,/newline/§fyou receive Resistance/newline/§ffor §a%improvement_integer% §fseconds."
 perk.voidscavenger: "§a%improvement_integer%% §fchance to give/newline/§fone slot of enemy inventory items/newline/§fto you, when you kill them/newline/§fin the void."
 
 
 # KITS
-kit.armorer: "§7Wooden sword/newline/§7Iron chestplate/newline/§7Iron leggings/newline/§7Iron boots"
-kit.armorsmith: "§7Anvil/newline/§7Enchanted book (Sharpness I)/newline/§7Enchanted book (Protection III)/newline/§764x enchanting bottle"
-kit.baseballplayer: "§7Wooden sword (Knockback I)/newline/§7Iron helmet (Protection I)"
-kit.enderman: "§7Enderpearl (25s spawn delay)/newline/§7Leather armor (Protection I)"
-kit.healer: "§73x Splash potion of Healing/newline/§7Iron boots"
-kit.hunter: "§7Bow (Power I)/newline/§78x arrow"
-kit.knight: "§7Iron sword (Sharpness I)/newline/§7Golden apple/newline/§7Iron chestplate (Protection II)"
-kit.ninja: "§7Iron sword/newline/§710x Snowball/newline/§7Water bucket/newline/§7Splash potion of speed 3 (15s)/newline/§7Ninja Head/newline/§7Black Leather Chestplate (Protection IV)"
-kit.princess: "§7Bow (Power I, Flame I, 12 uses)/newline/§74x arrow/newline/§7Gold helmet (Protection III)"
-kit.pyro: "§7Flint and Steel/newline/§72x Lava bucket/newline/§7Chain Chestplate/newline/§7Chain Leggings/newline/§7Infinite Potion of Fire Resistance"
-kit.scout: "§7Stone sword/newline/§73x Splash potion of Speed 2 (20s)"
-kit.viking: "§7Diamond axe (Sharpness I, Knockback I)/newline/§7Iron helmet (Protection I)/newline/§7Iron leggings (Protection I)"
+kit.archer: "§7Bow (Power I, Flame I, 12 uses)/newline/§77x Arrow/newline/§7Golden Leggings (Protection I)"
+kit.armorer: "§7Wooden Sword/newline/§7Leather Leggings/newline/§7Chainmail Boots"
+kit.baseball_player: "§7Wooden Sword (Knockback I)/newline/§7Chainmail Boots (Protection II)"
+kit.healer: "§72x Splash Potion of Healing/newline/§7Golden Apple"
+kit.knight: "§7Stone Sword (Sharpness I)/newline/§7Golden apple/newline/§7Chainmail Chestplate"
+kit.ninja: "§7Golden Sword/newline/§710x Snowball/newline/§7Water bucket/newline/§7Splash Potion of Speed III (15s)/newline/§7Black Leather Chestplate (Protection IV)"
+kit.scout: "§7Stone Sword/newline/§73x Splash Potion of Speed II (20s)"
+kit.alchemist: "§7Splash Potion of Harming/newline/§7Splash Potion of Healing II/newline/§7Leather Leggings"
+kit.frog: "§72x Splash Potion of Leaping V and Speed II/newline/§7Lime Leather Chestplate (Protection IV)"
 
-
-# ONLY MINIGAME MESSAGES
-chat.minigame_description: "§7There is only one goal in this game:/newline/§7kill all the enemy teams and be the last one standing!"
-holograms.empty: "§cEmpty!"
-holograms.items: "§6%items% items"
-special_item.inferno_staff: "§fClick to send out a pulse of fire,/newline/§fsetting alight to nearby players."
-special_item.run: "§fClick to gain Speed I for 5 seconds!"
-special_item.soup: "§fClick to get Regeneration I for 3 seconds!"
-chat.special_item_used: "§fYou used special item §a%special_item%§r§f"
-chat.meteorit_will_crash_in: "\u1E87 §aMeteorite §ffilled with loot will crash in §a%time% §fseconds."
-chat.meteorit_spawn: "§aThe meteorite §fhas crashed at coordinates §ax: %x%, z: %z%"
-chat.meteorit_was_found: "§aMeteorit was found!"
 
 #Quests
-daily_quest.survivor: "§7Survive longer than 50% of players/newline/in 3 separate games"
+daily_quest.survivor: "§7Survive longer than 50% of players/newline/§7in 3 separate games"
 daily_quest.marksman: "§7Kill a player with a ranged weapon"
 daily_quest.bloodthirsty: "§7Kill 15 players"
 daily_quest.opening_carnage: "§7Draw first blood in 3 separate games"
@@ -66,9 +61,24 @@ weekly_quest.meteorite_discoverer: "§7Loot a chest found in a meteorite"
 weekly_quest.top_killer: "§7Rank 1st in kills in 3 separate games"
 
 
+# MINIGAME MESSAGES
+holograms.empty: "§cEmpty!"
+holograms.items: "§6%items% items"
+special_item.inferno_staff: "§fClick to send out a pulse of fire,/newline/§fsetting alight to nearby players."
+special_item.run: "§fClick to gain Speed I for 5 seconds!"
+special_item.soup: "§fClick to get Regeneration I for 3 seconds!"
+chat.special_item_used: "§fYou used special item §a%special_item%§r§f"
+chat.meteorit_will_crash_in: "\u1E87 §aMeteorite §ffilled with loot will crash in §a%time% §fseconds."
+chat.meteorit_spawn: "§aThe meteorite §fhas crashed at coordinates §ax: %x%, z: %z%"
+chat.meteorit_was_found: "§aMeteorit was found!"
+chat.chest_refilled: "§8[§aSkyWars§8] §fChests were refilled."
+chat.border_shrinking: "§cBorder is now shrinking!"
+
+
 #Scoreboard
 scoreboard.kit.none: "§aNone"
-scoreboard.lootable: "Lootable"
+scoreboard.meteorite_crashed: "Crashed"
+scoreboard.meteorite_looted: "Looted"
 
 
 #Setup Mode
@@ -86,7 +96,9 @@ chat.successfully.spawnpoint: "\uE236 §aYou've successfully set spawnpoint for 
 chat.error.rare_chest: "\uE235 §cYou've to click on the rare chest to set it."
 chat.error.island_chest: "\uE235 §cYou've to click on the island chest to set it."
 chat.error.island_chest.already_set: "\uE235 §cYou've already set up this chest!"
+chat.error.no_map: "\uE235 §cNo map was created... create map using /skywars create map <name> <author(s)>"
 setup_item.map_selector: "§aMap Selector"
+setup_item.cancel: "§cCancel"
 setup_item.confirm: "§aConfirm"
 setup_item.finish: "§aFinish"
 setup_item.set_icon: "§6Set icon"

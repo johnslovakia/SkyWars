@@ -1,18 +1,24 @@
 package cz.johnslovakia.skywars.listeners;
 
+import cz.johnslovakia.gameapi.game.map.Area;
+import cz.johnslovakia.gameapi.game.map.GameMap;
 import cz.johnslovakia.gameapi.messages.MessageManager;
+import cz.johnslovakia.skywars.SkyWars;
 import cz.johnslovakia.skywars.chest.ChestManager;
 import cz.johnslovakia.gameapi.game.GameState;
 import cz.johnslovakia.gameapi.events.TaskEvent;
 import cz.johnslovakia.gameapi.game.Game;
 import cz.johnslovakia.gameapi.users.GamePlayer;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
-public class CountdownListener implements Listener {
+public class TaskListener implements Listener {
 
     //public static Map<Game, List<ArmorStand>> armorstands = new HashMap<>();
     public static Map<Game, BukkitTask> tasks = new HashMap<>();
@@ -67,32 +73,46 @@ public class CountdownListener implements Listener {
             return;
         }
 
-        /*if (e.getTask().getId().equalsIgnoreCase("ThrowableTNT")){
-            if (e.getCounter() == 0){
-                Location location = DataHandler.getMapsConfig().getLocation("maps." + game.getPlayingArena().getID() + ".throwableTNT");
-                location.setWorld(game.getPlayingArena().getWorld());
-                if (location == null){
-                    return;
-                }
-                spawnHolograms(game, location);
-
-                Block block = location.subtract(0.0D, 1.0D, 0.0D).getBlock();
-                if (block != null) {
-                    block.setType(Material.DIAMOND_BLOCK);
-                }
-                e.getTask().cancelRunnable(false);
-            }
-        }*/
-
         if (e.getTask().getId().equalsIgnoreCase("ChestRefill")){
             if (e.getCounter() == 0){
+                ChestManager.getChestManager(game).refill();
                 MessageManager.get(game.getParticipants(), "chat.chest_refilled")
                         .send();
-                //ChestManager.refill();
-                ChestManager.getChestManager(game).refill();
+
                 if (e.getTask().getRestartCount() <= 3) {
                     e.getTask().restart();
                 }
+            }
+        }
+
+        if (e.getTask().equals(game.getRunningMainTask())){
+            GameMap map = game.getPlayingMap();
+            World world = map.getWorld();
+            Area mainArea = map.getMainArea();
+            WorldBorder worldBorder = world.getWorldBorder();
+
+            double width = Math.abs(mainArea.getLocation1().getX() - mainArea.getLocation2().getX());
+            double length = Math.abs(mainArea.getLocation1().getZ() - mainArea.getLocation2().getZ());
+            double size = Math.max(width, length);
+
+            if (e.getCounter() == 120){
+                MessageManager.get(game.getParticipants(), "chat.border_shrinking")
+                                .send();
+
+                worldBorder.setCenter(map.getMainArea().getCenter());
+                worldBorder.setSize(size);
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        double speed = (size >= 150 ? 0.065 : 0.04);
+                        worldBorder.setSize(worldBorder.getSize() - speed);
+
+                        if (game.getPlayingMap() == null || !game.getState().equals(GameState.INGAME) || worldBorder.getSize() <= 15) {
+                            cancel();
+                        }
+                    }
+                }.runTaskTimer(SkyWars.getInstance(), 1L, 1L);
             }
         }
 

@@ -13,6 +13,7 @@ import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -20,7 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.List;
 import java.util.Set;
 
-public class Digger implements Perk {
+public class Digger implements Perk, Listener {
 
     @Override
     public String getName() {
@@ -39,8 +40,8 @@ public class Digger implements Perk {
 
     @Override
     public List<PerkLevel> getLevels() {
-        PerkLevel level1 = new PerkLevel(1, Util.getPrice("perk.digger.level1", 800), 30);
-        PerkLevel level2 = new PerkLevel(2, Util.getPrice("perk.digger.level2", 1500), 3 * 60);
+        PerkLevel level1 = new PerkLevel(1, Util.getPrice("perk.digger.level1", 600), 30);
+        PerkLevel level2 = new PerkLevel(2, Util.getPrice("perk.digger.level2", 900), 3 * 60);
 
         return List.of(level1, level2);
     }

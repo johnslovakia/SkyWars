@@ -62,17 +62,14 @@ public class DataHandler {
 
             yaml.put("kits").setCountTopLineBreaks(1).addComments("KIT PRICES");
             yaml.put("kits", "armorer").setDefValues(80);
-            yaml.put("kits", "armorsmith").setDefValues(80);
+            yaml.put("kits", "frog").setDefValues(80);
             yaml.put("kits", "baseballplayer").setDefValues(80);
-            yaml.put("kits", "enderman").setDefValues(80);
             yaml.put("kits", "healer").setDefValues(80);
-            yaml.put("kits", "hunter").setDefValues(80);
             yaml.put("kits", "knight").setDefValues(80);
             yaml.put("kits", "ninja").setDefValues(80);
-            yaml.put("kits", "princess").setDefValues(80);
-            yaml.put("kits", "pyro").setDefValues(80);
+            yaml.put("kits", "archer").setDefValues(80);
             yaml.put("kits", "scout").setDefValues(80);
-            yaml.put("kits", "viking").setDefValues(80);
+            yaml.put("kits", "alchemist").setDefValues(80);
 
             yaml.put("perks").setCountTopLineBreaks(1).addComments("PERK PRICES");
             yaml.put("perks", "absorption", "level1").setDefValues(425);

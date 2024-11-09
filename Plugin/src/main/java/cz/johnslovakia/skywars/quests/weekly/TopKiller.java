@@ -6,6 +6,7 @@ import cz.johnslovakia.gameapi.events.PlayerScoreEvent;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import org.bukkit.event.Listener;
 
@@ -38,7 +39,7 @@ public class TopKiller implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<PlayerScoreEvent> trigger = new Trigger<>(PlayerScoreEvent.class,
-                PlayerScoreEvent::getGamePlayer,
+                new Mapper.SingleMapper<>(PlayerScoreEvent::getGamePlayer),
                 event -> event.getGamePlayer() != null && event.getScore().getName().equalsIgnoreCase("1stKiller") && event.getGamePlayer().getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

@@ -7,6 +7,7 @@ import cz.johnslovakia.gameapi.users.GamePlayer;
 import cz.johnslovakia.gameapi.users.quests.PlayerQuestData;
 import cz.johnslovakia.gameapi.users.quests.Quest;
 import cz.johnslovakia.gameapi.users.quests.QuestType;
+import cz.johnslovakia.gameapi.utils.eTrigger.Mapper;
 import cz.johnslovakia.gameapi.utils.eTrigger.Trigger;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -39,7 +40,7 @@ public class Victorious implements Quest, Listener {
     @Override
     public Set<Trigger<?>> getTriggers() {
         Trigger<GameEndEvent> trigger = new Trigger<>(GameEndEvent.class,
-                event -> (GamePlayer) event.getWinner(),
+                new Mapper.SingleMapper<>(event -> (GamePlayer) event.getWinner()),
                 event -> event.getWinner() != null && ((GamePlayer)event.getWinner()).getPlayerData().getQuestsByStatus(PlayerQuestData.Status.IN_PROGRESS).contains(this),
                 this::addProgress);
 

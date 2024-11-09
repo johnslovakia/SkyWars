@@ -45,7 +45,7 @@ public class Armorer implements Kit {
         HashMap<Integer, ItemStack> integerItemStackHashMap = inventory.addItem(XMaterial.WOODEN_SWORD.parseItem());
 
         return new KitContent(XMaterial.WOODEN_SWORD.parseItem(),
-                XMaterial.IRON_CHESTPLATE.parseItem(),
+                XMaterial.LEATHER_CHESTPLATE.parseItem(),
                 XMaterial.CHAINMAIL_BOOTS.parseItem());
     }
 }

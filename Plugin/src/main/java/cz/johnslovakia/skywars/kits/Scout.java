@@ -6,13 +6,10 @@ import cz.johnslovakia.gameapi.game.kit.Kit;
 import cz.johnslovakia.gameapi.game.kit.KitContent;
 import cz.johnslovakia.gameapi.game.kit.KitManager;
 import cz.johnslovakia.gameapi.utils.ItemBuilder;
-import cz.johnslovakia.skywars.utils.DataHandler;
 import cz.johnslovakia.skywars.utils.Util;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 public class Scout implements Kit {
