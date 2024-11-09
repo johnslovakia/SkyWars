@@ -23,7 +23,7 @@ public class Alchemist implements Kit {
 
     @Override
     public int getPrice() {
-        return Util.getPrice("kits.archer", 80);
+        return Util.getPrice("kits.alchemist", 80);
     }
 
     @Override
