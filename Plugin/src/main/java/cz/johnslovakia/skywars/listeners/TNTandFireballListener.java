@@ -29,18 +29,35 @@ public class TNTandFireballListener implements Listener {
     @EventHandler
     public void onExplosionPrime(ExplosionPrimeEvent e) {
         if (e.getEntity() instanceof TNTPrimed) {
-            e.setRadius(2.5F);
+            e.setRadius(2.3F);
         }
     }
 
     @EventHandler
     public void onBlockExplode(EntityExplodeEvent e) {
+        Location location = e.getEntity().getLocation();
+
         if (e.getEntity() instanceof TNTPrimed) {
-            e.setCancelled(true);
+            e.setYield(0f);
+            //e.setCancelled(true);
             for (Block block : e.blockList()) {
                 block.setType(Material.AIR);
             }
-            e.getLocation().getWorld().playSound(e.getLocation(), Sounds.EXPLODE.bukkitSound(), 20.0F, 20.0F);
+
+            double radius = 4;
+            for (Entity entity : location.getWorld().getNearbyEntities(location, radius, radius, radius)) {
+                if (entity instanceof TNTPrimed nearbyTnt) {
+                    Vector direction = nearbyTnt.getLocation().toVector().subtract(location.toVector());
+
+                    if (direction.length() > 0) {
+                        direction = direction.normalize();
+                        double randomFactor = 1 + (Math.random() * 0.6 - 0.3);
+                        nearbyTnt.setVelocity(direction.multiply(0.9 * randomFactor));
+                    }
+                }
+            }
+
+            //e.getLocation().getWorld().playSound(e.getLocation(), Sounds.EXPLODE.bukkitSound(), 20.0F, 20.0F);*/
         }else if (e.getEntity() instanceof Fireball){
             e.setCancelled(true);
             for (Block block : e.blockList()) {
@@ -56,10 +73,11 @@ public class TNTandFireballListener implements Listener {
         Entity damager = e.getDamager();
 
         if (entity instanceof Player player) {
-            if (damager instanceof TNTPrimed) {
+            /*if (damager instanceof TNTPrimed) {
                 e.setCancelled(true);
                 Utils.damagePlayer(player, 8);
-            } else if (damager instanceof Fireball fireball) {
+            } else */
+            if (damager instanceof Fireball fireball) {
                 e.setCancelled(true);
 
                 if (entity.equals(fireball.getShooter())) {
@@ -103,6 +121,8 @@ public class TNTandFireballListener implements Listener {
 
         if (eItem != null) {
             if (eItem.getType().equals(XMaterial.FIRE_CHARGE.parseMaterial())) {
+                e.setCancelled(true);
+
                 Location eye = player.getEyeLocation();
                 Location loc = eye.add(eye.getDirection().multiply(1.2));
 
